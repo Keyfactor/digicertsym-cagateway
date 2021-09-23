@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Keyfactor.AnyGateway.CscGlobal.Client.Models;
+using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
 
-namespace Keyfactor.AnyGateway.CscGlobal.Interfaces
+namespace Keyfactor.AnyGateway.DigiCertSym.Interfaces
 {
     public interface IKeyfactorClient
     {

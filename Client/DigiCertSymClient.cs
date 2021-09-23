@@ -8,22 +8,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using CAProxy.AnyGateway.Interfaces;
 using CSS.Common.Logging;
-using Keyfactor.AnyGateway.CscGlobal.Client.Models;
-using Keyfactor.AnyGateway.CscGlobal.Exceptions;
-using Keyfactor.AnyGateway.CscGlobal.Interfaces;
+using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
+using Keyfactor.AnyGateway.DigiCertSym.Exceptions;
+using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
 using Newtonsoft.Json;
-using Keyfactor.AnyGateway.CscGlobal;
+using Keyfactor.AnyGateway.DigiCertSym;
 
-namespace Keyfactor.AnyGateway.CscGlobal.Client
+namespace Keyfactor.AnyGateway.DigiCertSym.Client
 {
-    public sealed class CscGlobalClient : LoggingClientBase, ICscGlobalClient
+    public sealed class DigiCertSymClient : LoggingClientBase, IDigiCertSymClient
     {
-        public CscGlobalClient(ICAConnectorConfigProvider config)
+        public DigiCertSymClient(ICAConnectorConfigProvider config)
         {
-            if (config.CAConnectionData.ContainsKey(Constants.CscGlobalApiKey))
+            if (config.CAConnectionData.ContainsKey(Constants.DigiCertSymApiKey))
             {
-                BaseUrl = new Uri(config.CAConnectionData[Constants.CscGlobalUrl].ToString());
-                ApiKey = config.CAConnectionData[Constants.CscGlobalApiKey].ToString();
+                BaseUrl = new Uri(config.CAConnectionData[Constants.DigiCertSymUrl].ToString());
+                ApiKey = config.CAConnectionData[Constants.DigiCertSymApiKey].ToString();
                 Authorization = config.CAConnectionData[Constants.BearerToken].ToString();
                 RestClient = ConfigureRestClient();
             }

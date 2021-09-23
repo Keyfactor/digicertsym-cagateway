@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using CAProxy.AnyGateway.Interfaces;
 using CSS.Common.Logging;
-using Keyfactor.AnyGateway.CscGlobal.Client.Models;
-using Keyfactor.AnyGateway.CscGlobal.Interfaces;
+using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
+using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
 using Newtonsoft.Json;
 
-namespace Keyfactor.AnyGateway.CscGlobal.Client
+namespace Keyfactor.AnyGateway.DigiCertSym.Client
 {
     public sealed class KeyfactorClient : LoggingClientBase, IKeyfactorClient
     {

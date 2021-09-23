@@ -1,4 +1,4 @@
-﻿namespace Keyfactor.AnyGateway.CscGlobal.Interfaces
+﻿namespace Keyfactor.AnyGateway.DigiCertSym.Interfaces
 {
     internal interface IRegistrationError
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Keyfactor.AnyGateway.CscGlobal.Exceptions
+namespace Keyfactor.AnyGateway.DigiCertSym.Exceptions
 {
     public class RetryCountExceededException : Exception
     {

@@ -7,8 +7,8 @@
     <ProjectGuid>{B823BE29-7950-49FB-9239-DDBB423B08CE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Keyfactor.AnyGateway.CscGlobal</RootNamespace>
-    <AssemblyName>CscGlobalCaProxy</AssemblyName>
+    <RootNamespace>Keyfactor.AnyGateway.DigiCertSym</RootNamespace>
+    <AssemblyName>DigiCertSymProxy</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -80,7 +80,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client\CscGlobalClient.cs" />
+    <Compile Include="Client\DigiCertSymClient.cs" />
     <Compile Include="Client\KeyfactorClient.cs" />
     <Compile Include="Interfaces\IKeyfactorCertificate.cs" />
     <Compile Include="Client\Models\KeyfactorCertificate.cs" />
@@ -88,9 +88,9 @@
     <Compile Include="Interfaces\IKeyfactorClient.cs" />
     <Compile Include="Interfaces\IRegistrationError.cs" />
     <Compile Include="Client\Models\RegistrationError.cs" />
-    <Compile Include="Interfaces\ICscGlobalClient.cs" />
+    <Compile Include="Interfaces\IDigiCertSymClient.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="CscGlobalCaProxy.cs" />
+    <Compile Include="DigiCertSymProxy.cs" />
     <Compile Include="Client\Models\CertificateListResponse.cs" />
     <Compile Include="Client\Models\CertificateResponse.cs" />
     <Compile Include="Client\Models\CName.cs" />

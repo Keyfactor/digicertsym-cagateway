@@ -13,25 +13,25 @@ using CAProxy.Common;
 using CSS.Common;
 using CSS.Common.Logging;
 using CSS.PKI;
-using Keyfactor.AnyGateway.CscGlobal.Client;
-using Keyfactor.AnyGateway.CscGlobal.Client.Models;
-using Keyfactor.AnyGateway.CscGlobal.Interfaces;
+using Keyfactor.AnyGateway.DigiCertSym.Client;
+using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
+using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
 using Newtonsoft.Json;
 
-namespace Keyfactor.AnyGateway.CscGlobal
+namespace Keyfactor.AnyGateway.DigiCertSym
 {
-    public class CscGlobalCaProxy : BaseCAConnector
+    public class DigiCertSymProxy : BaseCAConnector
     {
         private readonly RequestManager _requestManager;
 
-        public CscGlobalCaProxy()
+        public DigiCertSymProxy()
         {
             _requestManager = new RequestManager();
         }
 
         private IKeyfactorClient KeyfactorClient { get; set; }
 
-        private ICscGlobalClient CscGlobalClient { get; set; }
+        private IDigiCertSymClient DigiCertSymClient { get; set; }
         public bool EnableTemplateSync { get; set; }
         private string CscGlobalEmail { get; set; }
         private string SmtpEmailHost { get; set; }
@@ -46,7 +46,7 @@ namespace Keyfactor.AnyGateway.CscGlobal
             Logger.Trace("Staring Revoke Method");
             var revokeResponse =
                 Task.Run(async () =>
-                        await CscGlobalClient.SubmitRevokeCertificateAsync(caRequestId.Substring(0, 36)))
+                        await DigiCertSymClient.SubmitRevokeCertificateAsync(caRequestId.Substring(0, 36)))
                     .Result; //todo fix to use pipe delimiter
 
             Logger.Trace($"Revoke Response JSON: {JsonConvert.SerializeObject(revokeResponse)}");
@@ -81,7 +81,7 @@ namespace Keyfactor.AnyGateway.CscGlobal
             try
             {
                 var certs = new BlockingCollection<ICertificateResponse>(100);
-                CscGlobalClient.SubmitCertificateListRequestAsync(certs, cancelToken);
+                DigiCertSymClient.SubmitCertificateListRequestAsync(certs, cancelToken);
 
                 foreach (var currentResponseItem in certs.GetConsumingEnumerable(cancelToken))
                 {
@@ -232,7 +232,7 @@ namespace Keyfactor.AnyGateway.CscGlobal
                         enrollmentRequest = _requestManager.GetRegistrationRequest(productInfo, csr, san);
                         Logger.Trace($"Enrollment Request JSON: {JsonConvert.SerializeObject(enrollmentRequest)}");
                         enrollmentResponse =
-                            Task.Run(async () => await CscGlobalClient.SubmitRegistrationAsync(enrollmentRequest))
+                            Task.Run(async () => await DigiCertSymClient.SubmitRegistrationAsync(enrollmentRequest))
                                 .Result;
 
                         if (enrollmentResponse?.Result != null)
@@ -277,7 +277,7 @@ namespace Keyfactor.AnyGateway.CscGlobal
                         Logger.Trace($"Renew uUId: {uUId}");
                         renewRequest = _requestManager.GetRenewalRequest(productInfo, uUId, csr, san);
                         Logger.Trace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewRequest)}");
-                        var renewResponse = Task.Run(async () => await CscGlobalClient.SubmitRenewalAsync(renewRequest))
+                        var renewResponse = Task.Run(async () => await DigiCertSymClient.SubmitRenewalAsync(renewRequest))
                             .Result;
                         if (renewResponse?.Result != null)
                         {
@@ -324,7 +324,7 @@ namespace Keyfactor.AnyGateway.CscGlobal
                         reissueRequest = _requestManager.GetReissueRequest(productInfo, uUId, csr, san);
                         Logger.Trace($"Reissue JSON: {JsonConvert.SerializeObject(reissueRequest)}");
                         var reissueResponse = Task
-                            .Run(async () => await CscGlobalClient.SubmitReissueAsync(reissueRequest))
+                            .Run(async () => await DigiCertSymClient.SubmitReissueAsync(reissueRequest))
                             .Result;
                         if (reissueResponse?.Result != null)
                         {
@@ -370,7 +370,7 @@ namespace Keyfactor.AnyGateway.CscGlobal
             var keyfactorCaId = caRequestId.Substring(0, 36); //todo fix to use pipe delimiter
             Logger.Trace($"Keyfactor Ca Id: {keyfactorCaId}");
             var certificateResponse =
-                Task.Run(async () => await CscGlobalClient.SubmitGetCertificateAsync(keyfactorCaId))
+                Task.Run(async () => await DigiCertSymClient.SubmitGetCertificateAsync(keyfactorCaId))
                     .Result;
 
             Logger.Trace($"Single Cert JSON: {JsonConvert.SerializeObject(certificateResponse)}");
@@ -387,9 +387,9 @@ namespace Keyfactor.AnyGateway.CscGlobal
         public override void Initialize(ICAConnectorConfigProvider configProvider)
         {
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
-            CscGlobalClient = new CscGlobalClient(configProvider);
+            DigiCertSymClient = new DigiCertSymClient(configProvider);
             KeyfactorClient = new KeyfactorClient(configProvider);
-            CscGlobalEmail = configProvider.CAConnectionData[Constants.CscGlobalEmailString].ToString();
+            CscGlobalEmail = configProvider.CAConnectionData[Constants.DigiCertSymEmailString].ToString();
             SmtpEmailHost = configProvider.CAConnectionData[Constants.SmtpEmailHost].ToString();
             FromEmailAddress = configProvider.CAConnectionData[Constants.FromEmailAddress].ToString();
             EmailUserId = configProvider.CAConnectionData[Constants.EmailUserId].ToString();

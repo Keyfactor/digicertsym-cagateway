@@ -1,7 +1,7 @@
-﻿using Keyfactor.AnyGateway.CscGlobal.Interfaces;
+﻿using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
 using Newtonsoft.Json;
 
-namespace Keyfactor.AnyGateway.CscGlobal.Client.Models
+namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
 {
     public class Price : IPrice
     {

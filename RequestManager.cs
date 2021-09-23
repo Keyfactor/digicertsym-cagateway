@@ -6,10 +6,10 @@ using System.Net.Mail;
 using System.Text;
 using CAProxy.AnyGateway.Models;
 using CSS.PKI;
-using Keyfactor.AnyGateway.CscGlobal.Client.Models;
-using Keyfactor.AnyGateway.CscGlobal.Interfaces;
+using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
+using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
 
-namespace Keyfactor.AnyGateway.CscGlobal
+namespace Keyfactor.AnyGateway.DigiCertSym
 {
     public class RequestManager
     {
@@ -255,11 +255,11 @@ namespace Keyfactor.AnyGateway.CscGlobal
             return evDetails;
         }
 
-        public int MapReturnStatus(string cscGlobalStatus)
+        public int MapReturnStatus(string digiCertSymStatus)
         {
             PKIConstants.Microsoft.RequestDisposition returnStatus;
 
-            switch (cscGlobalStatus)
+            switch (digiCertSymStatus)
             {
                 case "ACTIVE":
                     returnStatus = PKIConstants.Microsoft.RequestDisposition.ISSUED;

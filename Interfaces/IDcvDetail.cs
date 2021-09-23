@@ -1,6 +1,6 @@
-﻿using Keyfactor.AnyGateway.CscGlobal.Client.Models;
+﻿using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
 
-namespace Keyfactor.AnyGateway.CscGlobal.Interfaces
+namespace Keyfactor.AnyGateway.DigiCertSym.Interfaces
 {
     public interface IDcvDetail
     {

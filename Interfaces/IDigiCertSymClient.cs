@@ -1,11 +1,11 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using Keyfactor.AnyGateway.CscGlobal.Client.Models;
+using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
 
-namespace Keyfactor.AnyGateway.CscGlobal.Interfaces
+namespace Keyfactor.AnyGateway.DigiCertSym.Interfaces
 {
-    public interface ICscGlobalClient
+    public interface IDigiCertSymClient
     {
         Task<RegistrationResponse> SubmitRegistrationAsync(
             RegistrationRequest registerRequest);
