@@ -8,6 +8,5 @@
         public static string KeyfactorApiUrl = "KeyfactorApiUrl";
         public static string KeyfactorApiUserId = "KeyfactorApiUserId";
         public static string KeyfactorApiPassword = "KeyfactorApiPassword";
-        public static string DigiCertSymEmailString = "DigiCertSymEmail";
     }
 }

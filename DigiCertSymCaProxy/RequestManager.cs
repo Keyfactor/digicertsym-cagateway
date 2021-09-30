@@ -14,13 +14,13 @@ namespace Keyfactor.AnyGateway.DigiCertSym
     internal class RequestManager
     {
         public static Func<string, string> Pemify = ss =>
-    ss.Length <= 64 ? ss : ss.Substring(0, 64) + "\n" + Pemify(ss.Substring(64));
+            ss.Length <= 64 ? ss : ss.Substring(0, 64) + "\n" + Pemify(ss.Substring(64));
 
-        public int MapReturnStatus(string digicertStatus)
+        public int MapReturnStatus(string digiCertStatus)
         {
             PKIConstants.Microsoft.RequestDisposition returnStatus;
 
-            switch (digicertStatus)
+            switch (digiCertStatus)
             {
                 case "ACTIVE":
                     returnStatus = PKIConstants.Microsoft.RequestDisposition.ISSUED;
@@ -49,45 +49,47 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             return Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED);
         }
 
-        public EnrollmentRequest GetEnrollmentRequest(EnrollmentProductInfo productInfo, string csr, Dictionary<string, string[]> san)
+        public EnrollmentRequest GetEnrollmentRequest(EnrollmentProductInfo productInfo,string csr,
+            Dictionary<string, string[]> san)
         {
             var pemCert = Pemify(csr);
             pemCert = "-----BEGIN CERTIFICATE REQUEST-----\n" + pemCert;
             pemCert += "\n-----END CERTIFICATE REQUEST-----";
 
-            EnrollmentRequest req = new EnrollmentRequest();
-            San sn = new San();
-            Attributes attributes = new Attributes();
+            var req = new EnrollmentRequest();
+            var sn = new San();
+            var attributes = new Attributes();
 
             using (TextReader sr = new StringReader(pemCert))
             {
                 var reader = new PemReader(sr);
-                var creq = reader.ReadObject() as Pkcs10CertificationRequest;
-                var csrParsed = creq?.GetCertificationRequestInfo();
+                var cReq = reader.ReadObject() as Pkcs10CertificationRequest;
+                var csrParsed = cReq?.GetCertificationRequestInfo();
 
-                Profile profile = new Profile();
-                profile.Id = productInfo.ProductID;
+                var profile = new Profile {Id = productInfo.ProductID};
                 req.Profile = profile;
-                Seat seat = new Seat();
-                seat.SeatId = productInfo.ProductParameters["Seat"];
-                Validity validity = new Validity();
-                validity.Unit = "years";
-                validity.Duration = Convert.ToInt32(productInfo.ProductParameters["Validity (Years)"]);
+                var seat = new Seat {SeatId = productInfo.ProductParameters["Seat"]};
+                var validity = new Validity
+                {
+                    Unit = "years", Duration = Convert.ToInt32(productInfo.ProductParameters["Validity (Years)"])
+                };
                 attributes.CommonName = GetValueFromCsr("CN", csrParsed);
                 attributes.Country = GetValueFromCsr("C", csrParsed);
                 req.Validity = validity;
                 req.Seat = seat;
                 req.Csr = csr;
-            }            
+            }
 
             switch (productInfo.ProductID)
             {
                 case "2.16.840.1.113733.1.16.1.2.3.6.1.1266772938":
-                    UserPrincipalName pn = new UserPrincipalName();
+                    var pn = new UserPrincipalName();
                     pn.Id = "otherNameUPN";
                     pn.Value = productInfo.ProductParameters["User Principal Name"];
-                    var pnList = new List<UserPrincipalName>();
-                    pnList.Add(pn);
+                    var pnList = new List<UserPrincipalName>
+                    {
+                        pn
+                    };
                     sn.UserPrincipalName = pnList;
                     attributes.San = sn;
                     break;
@@ -96,7 +98,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             }
 
             req.Attributes = attributes;
-            return req; 
+            return req;
         }
 
         public EnrollmentResult
@@ -121,8 +123,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
         public static string GetValueFromCsr(string subjectItem, CertificationRequestInfo csr)
         {
-            var csrVals = csr.Subject.ToString().Split(',');
-            foreach (var val in csrVals)
+            var csrValues = csr.Subject.ToString().Split(',');
+            foreach (var val in csrValues)
             {
                 var nmValPair = val.Split('=');
 
@@ -131,16 +133,10 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
             return "";
         }
-        public EnrollmentRequest GetRenewalRequest(EnrollmentProductInfo productInfo, string priorCertSn, string csr, Dictionary<string, string[]> san)
-        {
-            throw new NotImplementedException();
-        }
 
         public EnrollmentResult GetRenewResponse(EnrollmentResponse renewResponse)
         {
             throw new NotImplementedException();
         }
     }
-
-
 }

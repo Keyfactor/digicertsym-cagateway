@@ -26,8 +26,6 @@ namespace Keyfactor.AnyGateway.DigiCertSym
         }
 
         private IDigiCertSymClient DigiCertSymClient { get; set; }
-        public bool EnableTemplateSync { get; set; }
-
 
 
         public override int Revoke(string caRequestId, string hexSerialNumber, uint revocationReason)
@@ -111,7 +109,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
                     var priorCertSn = productInfo.ProductParameters["PriorCertSN"];
                     Logger.Trace($"Renew Serial Number: {priorCertSn}");
-                    renewRequest = _requestManager.GetRenewalRequest(productInfo, priorCertSn, csr, san);
+                    renewRequest = _requestManager.GetEnrollmentRequest(productInfo, csr, san);
 
                     Logger.Trace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewRequest)}");
                     var renewResponse = Task.Run(async () =>
