@@ -87,31 +87,21 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     Logger.Trace("Entering New Enrollment");
                     //If they renewed an expired cert it gets here and this will not be supported
                     IEnrollmentResponse enrollmentResponse;
-                    if (!productInfo.ProductParameters.ContainsKey("PriorCertSN"))
-                    {
-                        enrollmentRequest = _requestManager.GetEnrollmentRequest(productInfo, csr, san);
-                        Logger.Trace($"Enrollment Request JSON: {JsonConvert.SerializeObject(enrollmentRequest)}");
-                        enrollmentResponse =
-                            Task.Run(async () => await DigiCertSymClient.SubmitEnrollmentAsync(enrollmentRequest))
-                                .Result;
 
-                        if (enrollmentResponse?.Result == null)
-                            return new EnrollmentResult
-                            {
-                                Status = 30, //failure
-                                StatusMessage = $"Enrollment Failed {enrollmentResponse?.RegistrationError.Count} Errors"
-                            };
+                    enrollmentRequest = _requestManager.GetEnrollmentRequest(productInfo, csr, san);
+                    Logger.Trace($"Enrollment Request JSON: {JsonConvert.SerializeObject(enrollmentRequest)}");
+                    enrollmentResponse =
+                        Task.Run(async () => await DigiCertSymClient.SubmitEnrollmentAsync(enrollmentRequest))
+                            .Result;
 
-                        Logger.Trace($"Enrollment Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
-                    }
-                    else
-                    {
+                    if (enrollmentResponse?.Result == null)
                         return new EnrollmentResult
                         {
                             Status = 30, //failure
-                            StatusMessage = "You cannot renew and expired cert please perform an new enrollment."
+                            StatusMessage = $"Enrollment Failed {enrollmentResponse?.RegistrationError.Count} Errors"
                         };
-                    }
+
+                    Logger.Trace($"Enrollment Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
 
                     Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
                     return _requestManager.GetEnrollmentResult(enrollmentResponse);
@@ -168,8 +158,6 @@ namespace Keyfactor.AnyGateway.DigiCertSym
         {
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
             DigiCertSymClient = new DigiCertSymClient(configProvider);
-            var templateSync = configProvider.CAConnectionData["TemplateSync"].ToString();
-            if (templateSync.ToUpper() == "ON") EnableTemplateSync = true;
             Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
         }
 

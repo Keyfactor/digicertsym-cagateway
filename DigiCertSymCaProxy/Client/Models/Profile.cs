@@ -10,7 +10,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
 {
     public class Profile : IProfile
     {
-        [JsonProperty("id")] public string Id { get; set; }
-        [JsonProperty("name")] public string Name { get; set; }
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)] public string Id { get; set; }
+        [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)] public string Name { get; set; }
     }
 }

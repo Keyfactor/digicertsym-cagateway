@@ -11,17 +11,26 @@
   "KeyRetentionDays": 55,
   "KeyArchival": false,
   "EnrollmentFields": [
-      "Id": 2242340,
-      "Name": "Validity (Years)",
-      "Options": [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6"
-      ],
-      "DataType": 2
+    {
+    "Id"
+    :
+    2242340,
+    "Name"
+    :
+    "Validity (Years)",
+    "Options"
+    :
+    [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "DataType"
+    :
+    2
     },
     {
       "Id": 2242370,

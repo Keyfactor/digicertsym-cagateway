@@ -10,6 +10,6 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
 {
     public class Account : IAccount
     {
-        [JsonProperty("id")] public int Id { get; set; }
+        [JsonProperty("id",NullValueHandling = NullValueHandling.Ignore)] public int Id { get; set; }
     }
 }

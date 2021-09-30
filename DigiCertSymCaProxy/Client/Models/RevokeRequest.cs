@@ -10,6 +10,6 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
 {
     public class RevokeRequest : IRevokeRequest
     {
-        [JsonProperty("revocation_reason")] public string RevocationReason { get; set; }
+        [JsonProperty("revocation_reason", NullValueHandling = NullValueHandling.Ignore)] public string RevocationReason { get; set; }
     }
 }

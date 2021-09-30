@@ -10,8 +10,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
 {
     public class ErrorResponse : IErrorResponse
     {
-        [JsonProperty("code")] public string Code { get; set; }
-        [JsonProperty("message")] public string Message { get; set; }
-        [JsonProperty("field")] public string Field { get; set; }
+        [JsonProperty("code", NullValueHandling = NullValueHandling.Ignore)] public string Code { get; set; }
+        [JsonProperty("message", NullValueHandling = NullValueHandling.Ignore)] public string Message { get; set; }
+        [JsonProperty("field", NullValueHandling = NullValueHandling.Ignore)] public string Field { get; set; }
     }
 }

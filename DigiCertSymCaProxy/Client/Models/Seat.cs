@@ -10,8 +10,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
 {
     public class Seat : ISeat
     {
-        [JsonProperty("email")] public string Email { get; set; }
-        [JsonProperty("seat_id")] public string SeatId { get; set; }
-        [JsonProperty("seat_name")] public string SeatName { get; set; }
+        [JsonProperty("email", NullValueHandling = NullValueHandling.Ignore)] public string Email { get; set; }
+        [JsonProperty("seat_id", NullValueHandling = NullValueHandling.Ignore)] public string SeatId { get; set; }
+        [JsonProperty("seat_name", NullValueHandling = NullValueHandling.Ignore)] public string SeatName { get; set; }
     }
 }

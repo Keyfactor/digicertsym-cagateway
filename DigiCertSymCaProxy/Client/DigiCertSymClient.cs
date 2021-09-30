@@ -33,9 +33,10 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
         public async Task<EnrollmentResponse> SubmitEnrollmentAsync(
             EnrollmentRequest enrollmentRequest)
         {
-            using (var resp = await RestClient.PostAsync("/api/v1/certificate", new StringContent(
+            using (var resp = await RestClient.PostAsync("/mpki/api/v1/certificate", new StringContent(
                 JsonConvert.SerializeObject(enrollmentRequest), Encoding.ASCII, "application/json")))
             {
+                EnrollmentResponse response;
                 Logger.Trace(JsonConvert.SerializeObject(enrollmentRequest));
                 var settings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
                 if (resp.StatusCode == HttpStatusCode.BadRequest) //Digicert Sends Errors back in 400 Json Response
@@ -43,21 +44,22 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                     var errorResponse =
                         JsonConvert.DeserializeObject<List<ErrorResponse>>(await resp.Content.ReadAsStringAsync(),
                             settings);
-                    var response = new EnrollmentResponse {RegistrationError = errorResponse, Result = null};
+                    response = new EnrollmentResponse {RegistrationError = errorResponse, Result = null};
                     return response;
                 }
 
                 var registrationResponse =
-                    JsonConvert.DeserializeObject<EnrollmentResponse>(await resp.Content.ReadAsStringAsync(),
+                    JsonConvert.DeserializeObject<EnrollmentSuccessResponse>(await resp.Content.ReadAsStringAsync(),
                         settings);
-                return registrationResponse;
+                response = new EnrollmentResponse { RegistrationError = null, Result = registrationResponse };
+                return response;
             }
         }
 
         public async Task<EnrollmentResponse> SubmitRenewalAsync(string serialNumber,
             EnrollmentRequest renewalRequest)
         {
-            using (var resp = await RestClient.PostAsync($"/api/v1/certificate/{serialNumber}/renew", new StringContent(
+            using (var resp = await RestClient.PostAsync($"/mpki/api/v1/certificate/{serialNumber}/renew", new StringContent(
                 JsonConvert.SerializeObject(renewalRequest), Encoding.ASCII, "application/json")))
             {
                 Logger.Trace(JsonConvert.SerializeObject(renewalRequest));
@@ -81,7 +83,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
 
         public async Task<RevokeResponse> SubmitRevokeCertificateAsync(string serialNumber)
         {
-            using (var resp = await RestClient.PutAsync($"/api/v1/certificate/{serialNumber}/revoke", new StringContent("")))
+            using (var resp = await RestClient.PutAsync($"/mpki/api/v1/certificate/{serialNumber}/revoke", new StringContent("")))
             {
                 var settings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
                 if (resp.StatusCode == HttpStatusCode.BadRequest) //Digicert Sends Errors back in 400 Json Response
@@ -103,7 +105,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
 
         public async Task<GetCertificateResponse> SubmitGetCertificateAsync(string serialNumber)
         {
-            using (var resp = await RestClient.GetAsync($"/api/v1/certificate/{serialNumber}"))
+            GetCertificateResponse response;
+            using (var resp = await RestClient.GetAsync($"/mpki/api/v1/certificate/{serialNumber}"))
             {
                 Logger.Trace(JsonConvert.SerializeObject(resp));
 
@@ -113,14 +116,15 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                     var errorResponse =
                         JsonConvert.DeserializeObject<List<ErrorResponse>>(await resp.Content.ReadAsStringAsync(),
                             settings);
-                    var response = new GetCertificateResponse() { CertificateError = errorResponse, Result = null };
+                    response = new GetCertificateResponse() { CertificateError = errorResponse, Result = null };
                     return response;
                 }
 
                 var certificateResponse =
-                    JsonConvert.DeserializeObject<GetCertificateResponse>(await resp.Content.ReadAsStringAsync(),
+                    JsonConvert.DeserializeObject<CertificateDetails>(await resp.Content.ReadAsStringAsync(),
                         settings);
-                return certificateResponse;
+                response = new GetCertificateResponse() { CertificateError = null, Result = certificateResponse };
+                return response;
             }
         }
 

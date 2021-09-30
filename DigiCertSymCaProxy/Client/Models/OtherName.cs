@@ -10,9 +10,9 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
 {
     public class OtherName : IOtherName
     {
-        [JsonProperty("id")] public string Id { get; set; }
-        [JsonProperty("mandatory")] public bool Mandatory { get; set; }
-        [JsonProperty("type")] public string Type { get; set; }
-        [JsonProperty("value")] public string Value { get; set; }
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)] public string Id { get; set; }
+        [JsonProperty("mandatory", NullValueHandling = NullValueHandling.Ignore)] public bool Mandatory { get; set; }
+        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)] public string Type { get; set; }
+        [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)] public string Value { get; set; }
     }
 }

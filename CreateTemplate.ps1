@@ -26,7 +26,7 @@
         $NewTempl.put("msPKI-Minimal-Key-Size","2048")
         $NewTempl.put("msPKI-Template-Schema-Version","2")
         $NewTempl.put("msPKI-Template-Minor-Revision","0")
-        $NewTempl.put("msPKI-Cert-Template-OID","1.3.6.1.4.1.311.21.8.$(Get-Random -Minimum 10000000 -Maximum 90000000).$(Get-Random -Minimum 10000000 -Maximum 90000000).$(Get-Random -Minimum 1000000 -Maximum 9000000).$(Get-Random -Minimum 1000000 -Maximum 9000000).$(Get-Random -Minimum 1000000 -Maximum 9000000).119.$(Get-Random -Minimum 10000000 -Maximum 90000000).1716 293")
+        $NewTempl.put("msPKI-Cert-Template-OID","1.3.6.1.4.1.311.21.8.$(Get-Random -Minimum 10000000 -Maximum 90000000).$(Get-Random -Minimum 10000000 -Maximum 90000000).$(Get-Random -Minimum 1000000 -Maximum 9000000).$(Get-Random -Minimum 1000000 -Maximum 9000000).$(Get-Random -Minimum 1000000 -Maximum 9000000).119.$(Get-Random -Minimum 10000000 -Maximum 90000000).1716.293")
         $NewTempl.put("msPKI-Certificate-Application-Policy","1.3.6.1.5.5.7.3.1")
 
         $NewTempl.SetInfo()
