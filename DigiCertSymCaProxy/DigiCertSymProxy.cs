@@ -96,8 +96,9 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                         return new EnrollmentResult
                         {
                             Status = 30, //failure
-                            StatusMessage = $"Enrollment Failed {enrollmentResponse?.RegistrationError.errors.Count} Errors"
+                            StatusMessage = $"Enrollment Failed: {_requestManager.FlattenErrors(enrollmentResponse?.RegistrationError.errors)}"
                         };
+
 
                     Logger.Trace($"Enrollment Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
 
@@ -120,7 +121,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                         {
                             Status = 30, //failure
                             StatusMessage =
-                                $"Enrollment Failed {renewResponse?.RegistrationError.errors.Count} Errors Occurred"
+                                $"Enrollment Failed {_requestManager.FlattenErrors(renewResponse?.RegistrationError.errors)}"
                         };
 
                     Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);

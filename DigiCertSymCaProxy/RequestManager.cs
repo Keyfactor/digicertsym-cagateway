@@ -121,6 +121,17 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             };
         }
 
+        internal string FlattenErrors(List<ErrorResponse> errors)
+        {
+            string errorMessage = String.Empty;
+            foreach(var error in errors)
+            {
+                errorMessage += error.Message + "\n";
+            }
+
+            return errorMessage;
+        }
+
         public static string GetValueFromCsr(string subjectItem, CertificationRequestInfo csr)
         {
             var csrValues = csr.Subject.ToString().Split(',');
