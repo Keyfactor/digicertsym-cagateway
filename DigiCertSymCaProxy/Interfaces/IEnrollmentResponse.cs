@@ -6,6 +6,6 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Interfaces
     public interface IEnrollmentResponse
     {
         EnrollmentSuccessResponse Result { get; set; }
-        List<ErrorResponse> RegistrationError { get; set; }
+        ErrorList RegistrationError { get; set; }
     }
 }

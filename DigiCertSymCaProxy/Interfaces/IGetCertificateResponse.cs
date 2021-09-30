@@ -6,6 +6,6 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Interfaces
     public interface IGetCertificateResponse
     {
         CertificateDetails Result { get; set; }
-        List<ErrorResponse> CertificateError { get; set; }
+        ErrorList CertificateError { get; set; }
     }
 }

@@ -11,6 +11,6 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
     public class RevokeResponse : IRevokeResponse
     {
         [JsonProperty("result", NullValueHandling = NullValueHandling.Ignore)] public string Result { get; set; }
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public List<ErrorResponse> RegistrationError { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public ErrorList RegistrationError { get; set; }
     }
 }

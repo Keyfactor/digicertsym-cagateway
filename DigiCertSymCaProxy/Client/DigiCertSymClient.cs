@@ -42,7 +42,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                 if (resp.StatusCode == HttpStatusCode.BadRequest) //Digicert Sends Errors back in 400 Json Response
                 {
                     var errorResponse =
-                        JsonConvert.DeserializeObject<List<ErrorResponse>>(await resp.Content.ReadAsStringAsync(),
+                        JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
                             settings);
                     response = new EnrollmentResponse {RegistrationError = errorResponse, Result = null};
                     return response;
@@ -69,7 +69,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                 if (resp.StatusCode == HttpStatusCode.BadRequest) //Digicert Sends Errors back in 400 Json Response
                 {
                     var errorResponse =
-                        JsonConvert.DeserializeObject<List<ErrorResponse>>(await resp.Content.ReadAsStringAsync(),
+                        JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
                             settings);
                     response = new EnrollmentResponse { RegistrationError = errorResponse, Result = null };
                     return response;
@@ -92,7 +92,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                 if (resp.StatusCode == HttpStatusCode.BadRequest) //Digicert Sends Errors back in 400 Json Response
                 {
                     var errorResponse =
-                        JsonConvert.DeserializeObject<List<ErrorResponse>>(await resp.Content.ReadAsStringAsync(),
+                        JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
                             settings);
                     var response = new RevokeResponse();
                     response.RegistrationError = errorResponse;
@@ -117,7 +117,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                 if (resp.StatusCode == HttpStatusCode.BadRequest) //Digicert Sends Errors back in 400 Json Response
                 {
                     var errorResponse =
-                        JsonConvert.DeserializeObject<List<ErrorResponse>>(await resp.Content.ReadAsStringAsync(),
+                        JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
                             settings);
                     response = new GetCertificateResponse {CertificateError = errorResponse, Result = null};
                     return response;

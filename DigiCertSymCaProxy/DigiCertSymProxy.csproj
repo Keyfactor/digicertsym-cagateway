@@ -83,6 +83,7 @@
     <Compile Include="Client\DigiCertSymClient.cs" />
     <Compile Include="Client\Models\Account.cs" />
     <Compile Include="Client\Models\CertificateDetails.cs" />
+    <Compile Include="Client\Models\ErrorList.cs" />
     <Compile Include="Client\Models\GetCertificateResponse.cs" />
     <Compile Include="Interfaces\IEnrollmentSuccessResponse.cs" />
     <Compile Include="Interfaces\IGetCertificateResponse.cs" />

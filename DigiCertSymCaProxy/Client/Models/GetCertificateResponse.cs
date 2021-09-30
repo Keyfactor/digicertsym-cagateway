@@ -11,6 +11,6 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
     public class GetCertificateResponse : IGetCertificateResponse
     {
         [JsonProperty("result", NullValueHandling = NullValueHandling.Ignore)] public CertificateDetails Result { get; set; }
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public List<ErrorResponse> CertificateError { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)] public ErrorList CertificateError { get; set; }
     }
 }
