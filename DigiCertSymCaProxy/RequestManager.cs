@@ -40,6 +40,29 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             return Convert.ToInt32(returnStatus);
         }
 
+        public RevokeRequest GetRevokeRequest(uint kfRevokeReason)
+        {
+            var req = new RevokeRequest();
+            req.RevocationReason = MapRevokeReason(kfRevokeReason);
+            return req;
+        }
+
+        private string MapRevokeReason(uint kfRevokeReason)
+        {
+            switch(kfRevokeReason)
+            {
+                case (uint)KeyfactorRevokeReasons.KeyCompromised:
+                    return DigiCertRevokeReasons.KeyCompromise;
+                case (uint)KeyfactorRevokeReasons.CessationOfOperation:
+                    return DigiCertRevokeReasons.CessationOfOperation;
+                case (uint)KeyfactorRevokeReasons.AffiliationChanged:
+                    return DigiCertRevokeReasons.AffiliationChanged;
+                case (uint)KeyfactorRevokeReasons.Superseded:
+                    return DigiCertRevokeReasons.Superseded;
+            }
+
+            return "";
+        }
 
         public int GetRevokeResult(IRevokeResponse revokeResponse)
         {
@@ -132,6 +155,11 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             return errorMessage;
         }
 
+        internal EnrollmentResult GetRenewResponse(EnrollmentResponse renewResponse)
+        {
+            throw new NotImplementedException();
+        }
+
         public static string GetValueFromCsr(string subjectItem, CertificationRequestInfo csr)
         {
             var csrValues = csr.Subject.ToString().Split(',');
@@ -145,9 +173,17 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             return "";
         }
 
-        public EnrollmentResult GetRenewResponse(EnrollmentResponse renewResponse)
+
+        public enum KeyfactorRevokeReasons:uint
         {
-            throw new NotImplementedException();
+            ReasonUnspecified=0,
+            KeyCompromised=1,
+            CACompromised=2,
+            AffiliationChanged=3,
+            Superseded=4,
+            CessationOfOperation=5,
+            CertificateHold=6
         }
+
     }
 }

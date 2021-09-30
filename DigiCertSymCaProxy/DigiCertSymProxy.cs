@@ -31,13 +31,14 @@ namespace Keyfactor.AnyGateway.DigiCertSym
         public override int Revoke(string caRequestId, string hexSerialNumber, uint revocationReason)
         {
             Logger.Trace("Staring Revoke Method");
+            var revokeRequest= _requestManager.GetRevokeRequest(revocationReason);
+
             var revokeResponse =
                 Task.Run(async () =>
-                        await DigiCertSymClient.SubmitRevokeCertificateAsync(hexSerialNumber))
+                        await DigiCertSymClient.SubmitRevokeCertificateAsync(hexSerialNumber,revokeRequest))
                     .Result;
 
             Logger.Trace($"Revoke Response JSON: {JsonConvert.SerializeObject(revokeResponse)}");
-            Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
 
             var revokeResult = _requestManager.GetRevokeResult(revokeResponse);
 

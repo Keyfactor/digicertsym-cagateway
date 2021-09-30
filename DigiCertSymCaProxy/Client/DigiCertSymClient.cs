@@ -83,10 +83,13 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
             }
         }
 
-        public async Task<RevokeResponse> SubmitRevokeCertificateAsync(string serialNumber)
+        public async Task<RevokeResponse> SubmitRevokeCertificateAsync(string serialNumber,RevokeRequest revokeRequest)
         {
+            RevokeResponse response=new RevokeResponse();
+
             using (var resp = await RestClient.PutAsync($"/mpki/api/v1/certificate/{serialNumber}/revoke",
-                new StringContent("")))
+                new StringContent(
+                    JsonConvert.SerializeObject(revokeRequest), Encoding.ASCII, "application/json")))
             {
                 var settings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
                 if (resp.StatusCode == HttpStatusCode.BadRequest) //Digicert Sends Errors back in 400 Json Response
@@ -94,15 +97,14 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                     var errorResponse =
                         JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
                             settings);
-                    var response = new RevokeResponse();
                     response.RegistrationError = errorResponse;
                     response.Result = null;
                     return response;
                 }
 
-                var getRevokeResponse =
-                    JsonConvert.DeserializeObject<RevokeResponse>(await resp.Content.ReadAsStringAsync());
-                return getRevokeResponse;
+                var getRevokeResponse = (await resp.Content.ReadAsStringAsync());
+                response = new RevokeResponse { RegistrationError = null, Result = getRevokeResponse};
+                return response;
             }
         }
 

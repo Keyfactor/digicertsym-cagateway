@@ -11,7 +11,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Interfaces
         Task<EnrollmentResponse> SubmitRenewalAsync(string serialNumber,
             EnrollmentRequest renewalRequest);
 
-        Task<RevokeResponse> SubmitRevokeCertificateAsync(string serialNumber);
+        Task<RevokeResponse> SubmitRevokeCertificateAsync(string serialNumber, RevokeRequest req);
 
         Task<GetCertificateResponse> SubmitGetCertificateAsync(string serialNumber);
     }
