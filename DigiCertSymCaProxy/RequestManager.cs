@@ -104,12 +104,13 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             var req = new EnrollmentRequest();
             var sn = new San();
             var attributes = new Attributes();
+            CertificationRequestInfo csrParsed;
 
             using (TextReader sr = new StringReader(pemCert))
             {
                 var reader = new PemReader(sr);
                 var cReq = reader.ReadObject() as Pkcs10CertificationRequest;
-                var csrParsed = cReq?.GetCertificationRequestInfo();
+                csrParsed = cReq?.GetCertificationRequestInfo();
 
                 var profile = new Profile {Id = productInfo.ProductID};
                 req.Profile = profile;
@@ -139,6 +140,15 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     attributes.San = sn;
                     break;
                 case "2.16.840.1.113733.1.16.1.5.2.5.1.1266771486":
+                    DnsName dns=new DnsName();
+                    dns.Id = "dnsName";
+                    dns.Value = GetValueFromCsr("CN", csrParsed);
+                    var dnsList = new List<DnsName>
+                    {
+                        dns
+                    };
+                    sn.DnsName = dnsList;
+                    attributes.San = sn;
                     break;
             }
 
