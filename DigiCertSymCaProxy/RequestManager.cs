@@ -91,7 +91,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
         }
 
         public EnrollmentRequest GetEnrollmentRequest(EnrollmentProductInfo productInfo, string csr,
-            Dictionary<string, string[]> san)
+            Dictionary<string, string[]> san) //todo Make this more flexible to support all the template configuration combinations
         {
             var pemCert = Pemify(csr);
             pemCert = "-----BEGIN CERTIFICATE REQUEST-----\n" + pemCert;
