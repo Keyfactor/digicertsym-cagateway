@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -24,6 +23,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
             {
                 BaseUrl = new Uri(config.CAConnectionData[Constants.DigiCertSymUrl].ToString());
                 ApiKey = config.CAConnectionData[Constants.DigiCertSymApiKey].ToString();
+                SeatList = config.CAConnectionData[Constants.SeatList].ToString();
                 RestClient = ConfigureRestClient();
             }
         }
@@ -31,7 +31,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
         private Uri BaseUrl { get; }
         private HttpClient RestClient { get; }
         private string ApiKey { get; }
-
+        private string SeatList { get; set; }
         private int PageSize { get; } = 50;
 
 
@@ -148,57 +148,60 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                 var pageCounter = 0;
                 var isComplete = false;
                 var retryCount = 0;
-                do
+                foreach (var seat in SeatList.Split(','))
                 {
-                    pageCounter++;
-                    var queryOrderRequest = requestManager.GetSearchCertificatesRequest(pageCounter,"Keyfactor Portal");
-                    var batchItemsProcessed = 0;
-                    using (var resp = await RestClient.PostAsync("/mpki/api/v1/searchcert", new StringContent(
-                        JsonConvert.SerializeObject(queryOrderRequest), Encoding.ASCII, "application/json")))
+                    do
                     {
-                        if (!resp.IsSuccessStatusCode)
+                        pageCounter++;
+                        var queryOrderRequest =
+                            requestManager.GetSearchCertificatesRequest(pageCounter, seat);
+                        var batchItemsProcessed = 0;
+                        using (var resp = await RestClient.PostAsync("/mpki/api/v1/searchcert", new StringContent(
+                            JsonConvert.SerializeObject(queryOrderRequest), Encoding.ASCII, "application/json")))
                         {
-                            var responseMessage = resp.Content.ReadAsStringAsync().Result;
-                            Logger.Error(
-                                $"Failed Request to SslStore. Retrying request. Status Code {resp.StatusCode} | Message: {responseMessage}");
-                            retryCount++;
-                            if (retryCount > 5)
-                                throw new RetryCountExceededException(
-                                    $"5 consecutive failures to {resp.RequestMessage.RequestUri}");
+                            if (!resp.IsSuccessStatusCode)
+                            {
+                                var responseMessage = resp.Content.ReadAsStringAsync().Result;
+                                Logger.Error(
+                                    $"Failed Request to SslStore. Retrying request. Status Code {resp.StatusCode} | Message: {responseMessage}");
+                                retryCount++;
+                                if (retryCount > 5)
+                                    throw new RetryCountExceededException(
+                                        $"5 consecutive failures to {resp.RequestMessage.RequestUri}");
 
-                            continue;
-                        }
+                                continue;
+                            }
 
-                        var response = JsonConvert.DeserializeObject<CertificateSearchResponse>(
+                            var response = JsonConvert.DeserializeObject<CertificateSearchResponse>(
                                 await resp.Content.ReadAsStringAsync());
 
-                        var batchResponse = response.Certificates;
-                        var batchCount = batchResponse.Count;
+                            var batchResponse = response.Certificates;
+                            var batchCount = batchResponse.Count;
 
-                        Logger.Trace($"Processing {batchCount} items in batch");
-                        do
-                        {
-                            var r = batchResponse[batchItemsProcessed];
-                            if (bc.TryAdd(r, 10, ct))
+                            Logger.Trace($"Processing {batchCount} items in batch");
+                            do
                             {
-                                Logger.Trace($"Added Certificate ID {r.SerialNumber} to Queue for processing");
-                                batchItemsProcessed++;
-                                itemsProcessed++;
-                                Logger.Trace($"Processed {batchItemsProcessed} of {batchCount}");
-                                Logger.Trace($"Total Items Processed: {itemsProcessed}");
-                            }
-                            else
-                            {
-                                Logger.Trace($"Adding {r} blocked. Retry");
-                            }
-                        } while (batchItemsProcessed < batchCount); //batch loop
-                    }
+                                var r = batchResponse[batchItemsProcessed];
+                                if (bc.TryAdd(r, 10, ct))
+                                {
+                                    Logger.Trace($"Added Certificate ID {r.SerialNumber} to Queue for processing");
+                                    batchItemsProcessed++;
+                                    itemsProcessed++;
+                                    Logger.Trace($"Processed {batchItemsProcessed} of {batchCount}");
+                                    Logger.Trace($"Total Items Processed: {itemsProcessed}");
+                                }
+                                else
+                                {
+                                    Logger.Trace($"Adding {r} blocked. Retry");
+                                }
+                            } while (batchItemsProcessed < batchCount); //batch loop
+                        }
 
-                    //assume that if we process less records than requested that we have reached the end of the certificate list
-                    if (batchItemsProcessed < PageSize)
-                        isComplete = true;
-                } while (!isComplete); //page loop
-
+                        //assume that if we process less records than requested that we have reached the end of the certificate list
+                        if (batchItemsProcessed < PageSize)
+                            isComplete = true;
+                    } while (!isComplete); //page loop
+                }
                 bc.CompleteAdding();
             }
             catch (OperationCanceledException cancelEx)
