@@ -20,45 +20,30 @@
     }
   },
   "CAConnection": {
-    "CscGlobalURL": "https://apis-ote.cscglobal.com/dbs/api/v2",
-    "ApiKey": "SALDJDSFKLDFS",
-    "BearerToken": "ASDLKFSALDKSDALK",
-    "FromEmailAddress":"noReply@keyfactor.com",
-    "CscGlobalEmail":"ServiceNowEmail@ServiceNow.com",
-    "KeyfactorApiUserId":"SomeUserForKFAPI",
-    "KeyfactorApiPassword":"SomePasswordForKFApi",
+    "DigiCertSymUrl": "https://pki-ws-rest.symauth.com/mpki/api/v1",
+    "ApiKey": "01cb64eba8173b53a9_E2FEF2DB64730C9332B964104E2248CEA05C7D8A6F2BBE02CD535DD51FA78B2E",
+    "KeyfactorApiUserId":"Keyfactor\\Administrator",
+    "KeyfactorApiPassword":"Password1",
     "KeyfactorApiUrl":"https://kftrain.keyfactor.lab/KeyfactorAPI",
-    "SmtpEmailHost":"smtp.mailgun.org",
-    "EmailUserId":"SomeSTMPServiceUserId",
-    "EmailPassword":"SomeSMTPServicePassword",
-    "EmailPort":"587",
-    "TemplateSync": "On"
+    "SeatList":"Keyfactor Portal,www.boingy.com"
   },
   "Templates": {
-    "CSC TrustedSecure Premium Certificate": {
-      "ProductID": "CSC TrustedSecure Premium Certificate",
+    "Microsoft Wi-Fi (Test Drive)": {
+      "ProductID": "2.16.840.1.113733.1.16.1.2.3.6.1.1266772938",
       "Parameters": {}
     },
-    "CSC TrustedSecure EV Certificate": {
-      "ProductID": "CSC TrustedSecure EV Certificate",
-      "Parameters": {}
-    },
-    "CSC TrustedSecure UC Certificate": {
-      "ProductID": "CSC TrustedSecure UC Certificate",
-      "Parameters": {}
-    },
-    "CSC TrustedSecure Premium Wildcard Certificate": {
-      "ProductID": "CSC TrustedSecure Premium Wildcard Certificate",
+    "Private Server certificates (Test Drive)": {
+      "ProductID": "2.16.840.1.113733.1.16.1.5.2.5.1.1266771486",
       "Parameters": {}
     }
   },
   "CertificateManagers": null,
   "GatewayRegistration": {
-    "LogicalName": "CscGlobalGateway",
+    "LogicalName": "DigiCertSym",
     "GatewayCertificate": {
       "StoreName": "CA",
       "StoreLocation": "LocalMachine",
-      "Thumbprint": "525c47fb3a5e0655fbd4be963ca1e94d5fecb43d"
+      "Thumbprint": "7c0d887f94559bb151d399e978aa89e9179cf1ad"
     }
   },
   "ServiceSettings": {
