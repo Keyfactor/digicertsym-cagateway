@@ -32,7 +32,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
 
         [JsonProperty("locality", NullValueHandling = NullValueHandling.Ignore)] public string Locality { get; set; }
 
-        [JsonProperty("message_digest")] public string MessageDigest { get; set; }
+        [JsonProperty("message_digest", NullValueHandling = NullValueHandling.Ignore)] public string MessageDigest { get; set; }
 
         [JsonProperty("organization_name", NullValueHandling = NullValueHandling.Ignore)] public string OrganizationName { get; set; }
 

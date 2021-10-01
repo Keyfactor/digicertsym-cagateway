@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
 
 namespace Keyfactor.AnyGateway.DigiCertSym.Interfaces
@@ -14,5 +16,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Interfaces
         Task<RevokeResponse> SubmitRevokeCertificateAsync(string serialNumber, RevokeRequest req);
 
         Task<GetCertificateResponse> SubmitGetCertificateAsync(string serialNumber);
+
+        Task SubmitQueryOrderRequestAsync(BlockingCollection<ICertificateDetails> bc, CancellationToken ct,
+            RequestManager requestManager);
     }
 }

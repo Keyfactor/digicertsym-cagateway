@@ -11,8 +11,19 @@ using Org.BouncyCastle.Pkcs;
 
 namespace Keyfactor.AnyGateway.DigiCertSym
 {
-    internal class RequestManager
+    public class RequestManager
     {
+        public enum KeyfactorRevokeReasons : uint
+        {
+            ReasonUnspecified = 0,
+            KeyCompromised = 1,
+            CaCompromised = 2,
+            AffiliationChanged = 3,
+            Superseded = 4,
+            CessationOfOperation = 5,
+            CertificateHold = 6
+        }
+
         public static Func<string, string> Pemify = ss =>
             ss.Length <= 64 ? ss : ss.Substring(0, 64) + "\n" + Pemify(ss.Substring(64));
 
@@ -22,11 +33,11 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
             switch (digiCertStatus)
             {
-                case "ACTIVE":
+                case "VALID":
                     returnStatus = PKIConstants.Microsoft.RequestDisposition.ISSUED;
                     break;
                 case "Initial":
-                case "Pending":
+                case "PENDING":
                     returnStatus = PKIConstants.Microsoft.RequestDisposition.PENDING;
                     break;
                 case "REVOKED":
@@ -47,17 +58,19 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             return req;
         }
 
+
+
         private string MapRevokeReason(uint kfRevokeReason)
         {
-            switch(kfRevokeReason)
+            switch (kfRevokeReason)
             {
-                case (uint)KeyfactorRevokeReasons.KeyCompromised:
+                case (uint) KeyfactorRevokeReasons.KeyCompromised:
                     return DigiCertRevokeReasons.KeyCompromise;
-                case (uint)KeyfactorRevokeReasons.CessationOfOperation:
+                case (uint) KeyfactorRevokeReasons.CessationOfOperation:
                     return DigiCertRevokeReasons.CessationOfOperation;
-                case (uint)KeyfactorRevokeReasons.AffiliationChanged:
+                case (uint) KeyfactorRevokeReasons.AffiliationChanged:
                     return DigiCertRevokeReasons.AffiliationChanged;
-                case (uint)KeyfactorRevokeReasons.Superseded:
+                case (uint) KeyfactorRevokeReasons.Superseded:
                     return DigiCertRevokeReasons.Superseded;
             }
 
@@ -72,7 +85,16 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             return Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED);
         }
 
-        public EnrollmentRequest GetEnrollmentRequest(EnrollmentProductInfo productInfo,string csr,
+        public CertificateSearchRequest GetSearchCertificatesRequest(int pageCounter,string seatId)
+        {
+            return new CertificateSearchRequest
+            {
+                SeatId = seatId,
+                StartIndex = pageCounter
+            };
+        }
+
+        public EnrollmentRequest GetEnrollmentRequest(EnrollmentProductInfo productInfo, string csr,
             Dictionary<string, string[]> san)
         {
             var pemCert = Pemify(csr);
@@ -146,11 +168,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
         internal string FlattenErrors(List<ErrorResponse> errors)
         {
-            string errorMessage = String.Empty;
-            foreach(var error in errors)
-            {
-                errorMessage += error.Message + "\n";
-            }
+            var errorMessage = string.Empty;
+            foreach (var error in errors) errorMessage += error.Message + "\n";
 
             return errorMessage;
         }
@@ -171,18 +190,6 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             }
 
             return "";
-        }
-
-
-        public enum KeyfactorRevokeReasons:uint
-        {
-            ReasonUnspecified=0,
-            KeyCompromised=1,
-            CACompromised=2,
-            AffiliationChanged=3,
-            Superseded=4,
-            CessationOfOperation=5,
-            CertificateHold=6
         }
 
     }

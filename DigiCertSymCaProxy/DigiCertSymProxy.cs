@@ -31,11 +31,11 @@ namespace Keyfactor.AnyGateway.DigiCertSym
         public override int Revoke(string caRequestId, string hexSerialNumber, uint revocationReason)
         {
             Logger.Trace("Staring Revoke Method");
-            var revokeRequest= _requestManager.GetRevokeRequest(revocationReason);
+            var revokeRequest = _requestManager.GetRevokeRequest(revocationReason);
 
             var revokeResponse =
                 Task.Run(async () =>
-                        await DigiCertSymClient.SubmitRevokeCertificateAsync(hexSerialNumber,revokeRequest))
+                        await DigiCertSymClient.SubmitRevokeCertificateAsync(hexSerialNumber, revokeRequest))
                     .Result;
 
             Logger.Trace($"Revoke Response JSON: {JsonConvert.SerializeObject(revokeResponse)}");
@@ -61,6 +61,57 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             CertificateAuthoritySyncInfo certificateAuthoritySyncInfo,
             CancellationToken cancelToken)
         {
+            try
+            {
+                var certs = new BlockingCollection<ICertificateDetails>(100);
+                DigiCertSymClient.SubmitQueryOrderRequestAsync(certs, cancelToken, _requestManager);
+
+                foreach (var currentResponseItem in certs.GetConsumingEnumerable(cancelToken))
+                {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        Logger.Error("Synchronize was canceled.");
+                        break;
+                    }
+
+                    try
+                    {
+                        Logger.Trace($"Took Certificate ID {currentResponseItem?.SerialNumber} from Queue");
+
+                        var certStatus = _requestManager.MapReturnStatus(currentResponseItem?.Status);
+
+                        //Keyfactor sync only seems to work when there is a valid cert and I can only get Active valid certs from SSLStore
+                        if (certStatus == Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.ISSUED) || certStatus ==
+                            Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED))
+                        {
+
+                            blockingBuffer.Add(new CAConnectorCertificate
+                            {
+                                CARequestID =
+                                    $"{currentResponseItem?.SerialNumber}",
+                                Certificate = currentResponseItem?.Certificate,
+                                SubmissionDate = Convert.ToDateTime(currentResponseItem?.ValidFrom),
+                                Status = certStatus,
+                                ProductID = $"{currentResponseItem?.Profile.Id}"
+                            }, cancelToken);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Logger.Error("Synchronize was canceled.");
+                        break;
+                    }
+                }
+            }
+            catch (AggregateException aggEx)
+            {
+                Logger.Error("SslStore Synchronize Task failed!");
+                Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
+                // ReSharper disable once PossibleIntendedRethrow
+                throw aggEx;
+            }
+
+            Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
         }
 
         [Obsolete]
@@ -97,7 +148,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                         return new EnrollmentResult
                         {
                             Status = 30, //failure
-                            StatusMessage = $"Enrollment Failed: {_requestManager.FlattenErrors(enrollmentResponse?.RegistrationError.errors)}"
+                            StatusMessage =
+                                $"Enrollment Failed: {_requestManager.FlattenErrors(enrollmentResponse?.RegistrationError.Errors)}"
                         };
 
 
@@ -122,7 +174,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                         {
                             Status = 30, //failure
                             StatusMessage =
-                                $"Enrollment Failed {_requestManager.FlattenErrors(renewResponse?.RegistrationError.errors)}"
+                                $"Enrollment Failed {_requestManager.FlattenErrors(renewResponse?.RegistrationError.Errors)}"
                         };
 
                     Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);

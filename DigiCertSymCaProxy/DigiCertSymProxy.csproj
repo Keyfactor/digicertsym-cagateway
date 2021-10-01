@@ -83,9 +83,14 @@
     <Compile Include="Client\DigiCertSymClient.cs" />
     <Compile Include="Client\Models\Account.cs" />
     <Compile Include="Client\Models\CertificateDetails.cs" />
+    <Compile Include="Client\Models\CertificateSearchRequest.cs" />
+    <Compile Include="Client\Models\CertificateSearchResponse.cs" />
     <Compile Include="Client\Models\DigiCertRevokeReasons.cs" />
     <Compile Include="Client\Models\ErrorList.cs" />
     <Compile Include="Client\Models\GetCertificateResponse.cs" />
+    <Compile Include="Interfaces\ICertificateSearchRequest.cs" />
+    <Compile Include="Interfaces\ICertificateSearchResponse.cs" />
+    <Compile Include="Interfaces\IErrorList.cs" />
     <Compile Include="Interfaces\IEnrollmentSuccessResponse.cs" />
     <Compile Include="Interfaces\IGetCertificateResponse.cs" />
     <Compile Include="Interfaces\IAccount.cs" />
