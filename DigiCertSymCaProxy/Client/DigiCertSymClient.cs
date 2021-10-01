@@ -169,9 +169,10 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                             continue;
                         }
 
-                        var batchResponse =
-                            JsonConvert.DeserializeObject<List<CertificateDetails>>(
+                        var response = JsonConvert.DeserializeObject<CertificateSearchResponse>(
                                 await resp.Content.ReadAsStringAsync());
+
+                        var batchResponse = response.Certificates;
                         var batchCount = batchResponse.Count;
 
                         Logger.Trace($"Processing {batchCount} items in batch");
