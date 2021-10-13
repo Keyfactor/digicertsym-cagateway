@@ -210,23 +210,5 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
             return "";
         }
-
-        public EnrollmentResult GetRenewResponse(EnrollmentResponse renewResponse)
-        {
-            if (renewResponse.RegistrationError != null)
-                return new EnrollmentResult
-                {
-                    Status = 30, //failure
-                    StatusMessage = "Error occurred when enrolling"
-                };
-
-            return new EnrollmentResult
-            {
-                Status = 13, //success
-                CARequestID = renewResponse.Result.SerialNumber,
-                StatusMessage =
-                    $"Order Successfully Created With Order Number {renewResponse.Result.SerialNumber}"
-            };
-        }
     }
 }
