@@ -21,120 +21,160 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
         {
             if (config.CAConnectionData.ContainsKey(Constants.DigiCertSymApiKey))
             {
-                BaseUrl = new Uri(config.CAConnectionData[Constants.DigiCertSymUrl].ToString());
-                ApiKey = config.CAConnectionData[Constants.DigiCertSymApiKey].ToString();
-                SeatList = config.CAConnectionData[Constants.SeatList].ToString();
-                RestClient = ConfigureRestClient();
+                try
+                {
+                    BaseUrl = new Uri(config.CAConnectionData[Constants.DigiCertSymUrl].ToString());
+                    ApiKey = config.CAConnectionData[Constants.DigiCertSymApiKey].ToString();
+                    SeatList = config.CAConnectionData[Constants.SeatList].ToString();
+                    RestClient = ConfigureRestClient();
+                }
+                catch (Exception e)
+                {
+                    Logger.Error($"DigiCertSymClient Constructor Error Occurred: {e.Message}");
+                    throw;
+                }
             }
         }
 
         private Uri BaseUrl { get; }
         private HttpClient RestClient { get; }
         private string ApiKey { get; }
-        private string SeatList { get; set; }
+        private string SeatList { get; }
         private int PageSize { get; } = 50;
 
 
         public async Task<EnrollmentResponse> SubmitEnrollmentAsync(
             EnrollmentRequest enrollmentRequest)
         {
-            using (var resp = await RestClient.PostAsync("/mpki/api/v1/certificate", new StringContent(
-                JsonConvert.SerializeObject(enrollmentRequest), Encoding.ASCII, "application/json")))
+            try
             {
-                EnrollmentResponse response;
-                Logger.Trace(JsonConvert.SerializeObject(enrollmentRequest));
-                var settings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
-                if (resp.StatusCode == HttpStatusCode.BadRequest) //Digicert Sends Errors back in 400 Json Response
+                using (var resp = await RestClient.PostAsync("/mpki/api/v1/certificate", new StringContent(
+                    JsonConvert.SerializeObject(enrollmentRequest), Encoding.ASCII, "application/json")))
                 {
-                    var errorResponse =
-                        JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
+                    EnrollmentResponse response;
+                    Logger.Trace(JsonConvert.SerializeObject(enrollmentRequest));
+                    var settings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
+                    if (resp.StatusCode == HttpStatusCode.BadRequest) //DigiCert Sends Errors back in 400 Json Response
+                    {
+                        var errorResponse =
+                            JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
+                                settings);
+                        response = new EnrollmentResponse {RegistrationError = errorResponse, Result = null};
+                        return response;
+                    }
+
+                    var registrationResponse =
+                        JsonConvert.DeserializeObject<EnrollmentSuccessResponse>(await resp.Content.ReadAsStringAsync(),
                             settings);
-                    response = new EnrollmentResponse {RegistrationError = errorResponse, Result = null};
+                    response = new EnrollmentResponse {RegistrationError = null, Result = registrationResponse};
                     return response;
                 }
-
-                var registrationResponse =
-                    JsonConvert.DeserializeObject<EnrollmentSuccessResponse>(await resp.Content.ReadAsStringAsync(),
-                        settings);
-                response = new EnrollmentResponse {RegistrationError = null, Result = registrationResponse};
-                return response;
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"SubmitEnrollmentAsync Error Occurred {e.Message}");
+                throw;
             }
         }
 
         public async Task<EnrollmentResponse> SubmitRenewalAsync(string serialNumber,
             EnrollmentRequest renewalRequest)
         {
-            using (var resp = await RestClient.PostAsync($"/mpki/api/v1/certificate/{serialNumber}/renew",
-                new StringContent(
-                    JsonConvert.SerializeObject(renewalRequest), Encoding.ASCII, "application/json")))
+            try
             {
-                EnrollmentResponse response;
-                Logger.Trace(JsonConvert.SerializeObject(renewalRequest));
-                var settings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
-                if (resp.StatusCode == HttpStatusCode.BadRequest) //Digicert Sends Errors back in 400 Json Response
+                using (var resp = await RestClient.PostAsync($"/mpki/api/v1/certificate/{serialNumber}/renew",
+                    new StringContent(
+                        JsonConvert.SerializeObject(renewalRequest), Encoding.ASCII, "application/json")))
                 {
-                    var errorResponse =
-                        JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
+                    EnrollmentResponse response;
+                    Logger.Trace(JsonConvert.SerializeObject(renewalRequest));
+                    var settings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
+                    if (resp.StatusCode == HttpStatusCode.BadRequest) //DigiCert Sends Errors back in 400 Json Response
+                    {
+                        var errorResponse =
+                            JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
+                                settings);
+                        response = new EnrollmentResponse {RegistrationError = errorResponse, Result = null};
+                        return response;
+                    }
+
+                    var registrationResponse =
+                        JsonConvert.DeserializeObject<EnrollmentSuccessResponse>(await resp.Content.ReadAsStringAsync(),
                             settings);
-                    response = new EnrollmentResponse {RegistrationError = errorResponse, Result = null};
+                    response = new EnrollmentResponse {RegistrationError = null, Result = registrationResponse};
                     return response;
                 }
-
-                var registrationResponse =
-                    JsonConvert.DeserializeObject<EnrollmentSuccessResponse>(await resp.Content.ReadAsStringAsync(),
-                        settings);
-                response = new EnrollmentResponse {RegistrationError = null, Result = registrationResponse};
-                return response;
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"SubmitRenewalAsync Error Occurred {e.Message}");
+                throw;
             }
         }
 
         public async Task<RevokeResponse> SubmitRevokeCertificateAsync(string serialNumber, RevokeRequest revokeRequest)
         {
-            var response = new RevokeResponse();
-
-            using (var resp = await RestClient.PutAsync($"/mpki/api/v1/certificate/{serialNumber}/revoke",
-                new StringContent(
-                    JsonConvert.SerializeObject(revokeRequest), Encoding.ASCII, "application/json")))
+            try
             {
-                var settings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
-                if (resp.StatusCode == HttpStatusCode.BadRequest) //Digicert Sends Errors back in 400 Json Response
+                var response = new RevokeResponse();
+
+                using (var resp = await RestClient.PutAsync($"/mpki/api/v1/certificate/{serialNumber}/revoke",
+                    new StringContent(
+                        JsonConvert.SerializeObject(revokeRequest), Encoding.ASCII, "application/json")))
                 {
-                    var errorResponse =
-                        JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
-                            settings);
-                    response.RegistrationError = errorResponse;
-                    response.Result = null;
+                    var settings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
+                    if (resp.StatusCode == HttpStatusCode.BadRequest) //DigiCert Sends Errors back in 400 Json Response
+                    {
+                        var errorResponse =
+                            JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
+                                settings);
+                        response.RegistrationError = errorResponse;
+                        response.Result = null;
+                        return response;
+                    }
+
+                    var getRevokeResponse = await resp.Content.ReadAsStringAsync();
+                    response = new RevokeResponse {RegistrationError = null, Result = getRevokeResponse};
                     return response;
                 }
-
-                var getRevokeResponse = await resp.Content.ReadAsStringAsync();
-                response = new RevokeResponse {RegistrationError = null, Result = getRevokeResponse};
-                return response;
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"SubmitRevokeCertificateAsync Error Occurred {e.Message}");
+                throw;
             }
         }
 
         public async Task<GetCertificateResponse> SubmitGetCertificateAsync(string serialNumber)
         {
-            GetCertificateResponse response;
-            using (var resp = await RestClient.GetAsync($"/mpki/api/v1/certificate/{serialNumber}"))
+            try
             {
-                Logger.Trace(JsonConvert.SerializeObject(resp));
-
-                var settings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
-                if (resp.StatusCode == HttpStatusCode.BadRequest) //Digicert Sends Errors back in 400 Json Response
+                using (var resp = await RestClient.GetAsync($"/mpki/api/v1/certificate/{serialNumber}"))
                 {
-                    var errorResponse =
-                        JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
+                    Logger.Trace(JsonConvert.SerializeObject(resp));
+
+                    var settings = new JsonSerializerSettings {NullValueHandling = NullValueHandling.Ignore};
+                    GetCertificateResponse response;
+                    if (resp.StatusCode == HttpStatusCode.BadRequest) //DigiCert Sends Errors back in 400 Json Response
+                    {
+                        var errorResponse =
+                            JsonConvert.DeserializeObject<ErrorList>(await resp.Content.ReadAsStringAsync(),
+                                settings);
+                        response = new GetCertificateResponse {CertificateError = errorResponse, Result = null};
+                        return response;
+                    }
+
+                    var certificateResponse =
+                        JsonConvert.DeserializeObject<CertificateDetails>(await resp.Content.ReadAsStringAsync(),
                             settings);
-                    response = new GetCertificateResponse {CertificateError = errorResponse, Result = null};
+                    response = new GetCertificateResponse {CertificateError = null, Result = certificateResponse};
                     return response;
                 }
-
-                var certificateResponse =
-                    JsonConvert.DeserializeObject<CertificateDetails>(await resp.Content.ReadAsStringAsync(),
-                        settings);
-                response = new GetCertificateResponse {CertificateError = null, Result = certificateResponse};
-                return response;
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"SubmitGetCertificateAsync Error Occurred {e.Message}");
+                throw;
             }
         }
 
@@ -157,7 +197,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                             requestManager.GetSearchCertificatesRequest(pageCounter, seat);
                         var batchItemsProcessed = 0;
                         using (var resp = await RestClient.PostAsync("/mpki/api/v1/searchcert", new StringContent(
-                            JsonConvert.SerializeObject(queryOrderRequest), Encoding.ASCII, "application/json")))
+                            JsonConvert.SerializeObject(queryOrderRequest), Encoding.ASCII, "application/json"), ct))
                         {
                             if (!resp.IsSuccessStatusCode)
                             {
@@ -228,11 +268,19 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
 
         private HttpClient ConfigureRestClient()
         {
-            var clientHandler = new WebRequestHandler();
-            var returnClient = new HttpClient(clientHandler, true) {BaseAddress = BaseUrl};
-            returnClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            returnClient.DefaultRequestHeaders.Add("x-api-key", ApiKey);
-            return returnClient;
+            try
+            {
+                var clientHandler = new WebRequestHandler();
+                var returnClient = new HttpClient(clientHandler, true) {BaseAddress = BaseUrl};
+                returnClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                returnClient.DefaultRequestHeaders.Add("x-api-key", ApiKey);
+                return returnClient;
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"ConfigureRestClient Error Occurred {e.Message}");
+                throw;
+            }
         }
     }
 }

@@ -11,17 +11,15 @@ using Org.BouncyCastle.Pkcs;
 
 namespace Keyfactor.AnyGateway.DigiCertSym
 {
-    public class RequestManager
+    public class RequestManager 
     {
+
         public enum KeyfactorRevokeReasons : uint
         {
-            ReasonUnspecified = 0,
             KeyCompromised = 1,
-            CaCompromised = 2,
             AffiliationChanged = 3,
             Superseded = 4,
-            CessationOfOperation = 5,
-            CertificateHold = 6
+            CessationOfOperation = 5
         }
 
         public static Func<string, string> Pemify = ss =>
@@ -53,11 +51,9 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
         public RevokeRequest GetRevokeRequest(uint kfRevokeReason)
         {
-            var req = new RevokeRequest();
-            req.RevocationReason = MapRevokeReason(kfRevokeReason);
+            var req = new RevokeRequest {RevocationReason = MapRevokeReason(kfRevokeReason)};
             return req;
         }
-
 
 
         private string MapRevokeReason(uint kfRevokeReason)
@@ -85,7 +81,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             return Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED);
         }
 
-        public CertificateSearchRequest GetSearchCertificatesRequest(int pageCounter,string seatId)
+        public CertificateSearchRequest GetSearchCertificatesRequest(int pageCounter, string seatId)
         {
             return new CertificateSearchRequest
             {
@@ -95,7 +91,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
         }
 
         public EnrollmentRequest GetEnrollmentRequest(EnrollmentProductInfo productInfo, string csr,
-            Dictionary<string, string[]> san)
+            Dictionary<string, string[]> san) //todo Make this more flexible to support all the template configuration combinations
         {
             var pemCert = Pemify(csr);
             pemCert = "-----BEGIN CERTIFICATE REQUEST-----\n" + pemCert;
@@ -140,7 +136,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     attributes.San = sn;
                     break;
                 case "2.16.840.1.113733.1.16.1.5.2.5.1.1266771486":
-                    DnsName dns=new DnsName();
+                    var dns = new DnsName();
                     dns.Id = "dnsName";
                     dns.Value = GetValueFromCsr("CN", csrParsed);
                     var dnsList = new List<DnsName>
@@ -215,5 +211,22 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             return "";
         }
 
+        public EnrollmentResult GetRenewResponse(EnrollmentResponse renewResponse)
+        {
+            if (renewResponse.RegistrationError != null)
+                return new EnrollmentResult
+                {
+                    Status = 30, //failure
+                    StatusMessage = "Error occurred when enrolling"
+                };
+
+            return new EnrollmentResult
+            {
+                Status = 13, //success
+                CARequestID = renewResponse.Result.SerialNumber,
+                StatusMessage =
+                    $"Order Successfully Created With Order Number {renewResponse.Result.SerialNumber}"
+            };
+        }
     }
 }
