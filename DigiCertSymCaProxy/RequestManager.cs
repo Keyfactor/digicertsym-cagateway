@@ -5,13 +5,15 @@ using CAProxy.AnyGateway.Models;
 using CSS.PKI;
 using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
 using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Pkcs;
+using CSS.Common.Logging;
 
 namespace Keyfactor.AnyGateway.DigiCertSym
 {
-    public class RequestManager 
+    public class RequestManager: LoggingClientBase
     {
 
         public enum KeyfactorRevokeReasons : uint
@@ -149,7 +151,9 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             }
 
             req.Attributes = attributes;
+            Logger.Trace(JsonConvert.SerializeObject(req));
             return req;
+
         }
 
         public EnrollmentResult
