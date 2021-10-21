@@ -1,0 +1,36 @@
+{
+	"profile": {
+		"id": "2.16.840.1.113733.1.16.1.5.2.5.1.1280209757"
+	},
+	"seat": {
+		"seat_id": "EnrollmentParam|Seat|String"
+	},
+	"csr": "CSR|RAW|String",
+	"validity": {
+		"unit": "years",
+		"duration": "EnrollmentParam|Validity (Years)|Numeric"
+	},
+	"attributes": {
+		"common_name": "CSR|CN|String",
+		"country": "CSR|C|String",
+		"organization_name": "CSR|O|String",
+		"organization_unit": [
+			{
+				"id": "cert_org_unit2",
+				"value": "CSR|OU|String[1]"
+			},
+			{
+				"id": "cert_org_unit3",
+				"value": "CSR|OU|String[2]"
+			}
+		],
+		"san": {
+			"dns_name": [
+				{
+					"id": "dnsName",
+					"value": "www.manyorgunitsabc.com"
+				}
+			]
+		}
+	}
+}
