@@ -147,17 +147,27 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             //5. Loop through SANS and replace in Object
             var dnsList = new List<DnsName>();
             var dnsKp = san["dns"];
+            var j = 1;
             foreach (var item in dnsKp)
             {
-                DnsName dns = new DnsName {Id="dnsName", Value = item };
-                dnsList.Add(dns);
+                if (j < 2)
+                {
+                    DnsName dns = new DnsName { Id = "dnsName", Value = item };
+                    dnsList.Add(dns);
+                }
+                else
+                {
+                    DnsName dns = new DnsName { Id = "dnsName" + j, Value = item };
+                    dnsList.Add(dns);
+                }
+                j++;
             }
 
             //6. Loop through OUs and replace in Object
             var organizationalUnits = GetValueFromCsr("OU", csrParsed).Split('/');
 
             var orgUnits = new List<OrganizationUnit>();
-            var i = 1;
+            var i = 2;
             foreach (var ou in organizationalUnits)
             {
                 var organizationUnit = new OrganizationUnit { Id = "cert_org_unit" + i, Value = ou };
