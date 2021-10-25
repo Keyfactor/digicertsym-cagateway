@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
 
 namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
+﻿namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
 {
     public static class DigiCertRevokeReasons
     {

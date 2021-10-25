@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
 using Newtonsoft.Json;
 
 namespace Keyfactor.AnyGateway.DigiCertSym.Client.Models
