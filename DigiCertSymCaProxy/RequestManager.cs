@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Pkcs;
+using CSS.Common.Logging;
 
 namespace Keyfactor.AnyGateway.DigiCertSym
 {
@@ -267,6 +268,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 Logger.Error($"Error In GetEnrollmentRequest(EnrollmentProductInfo productInfo, string csr,Dictionary<string, string[]> san) : {e.Message}");
                 throw;
             }
+
         }
 
         public EnrollmentResult
