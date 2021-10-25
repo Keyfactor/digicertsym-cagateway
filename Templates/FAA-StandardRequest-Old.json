@@ -13,6 +13,24 @@
 	"attributes": {
 		"common_name": "CSR|CN",
 		"country": "CSR|C",
-		"organization_name": "CSR|O"
+		"organization_name": "CSR|O",
+		"organization_unit": [
+			{
+				"id": "cert_org_unit2",
+				"value": "CSR|OU[1]"
+			},
+			{
+				"id": "cert_org_unit3",
+				"value": "CSR|OU[2]"
+			}
+		],
+		"san": {
+			"dns_name": [
+				{
+					"id": "dnsName",
+					"value": "www.manyorgunitsabc.com"
+				}
+			]
+		}
 	}
 }

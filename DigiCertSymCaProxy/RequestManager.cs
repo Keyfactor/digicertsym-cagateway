@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using CAProxy.AnyGateway.Models;
 using CSS.PKI;
 using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
 using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Pkcs;
@@ -97,9 +100,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             pemCert = "-----BEGIN CERTIFICATE REQUEST-----\n" + pemCert;
             pemCert += "\n-----END CERTIFICATE REQUEST-----";
 
-            var req = new EnrollmentRequest();
+            //var req = new EnrollmentRequest();
             var sn = new San();
-            var attributes = new Attributes();
             CertificationRequestInfo csrParsed;
 
             using (TextReader sr = new StringReader(pemCert))
@@ -107,49 +109,65 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 var reader = new PemReader(sr);
                 var cReq = reader.ReadObject() as Pkcs10CertificationRequest;
                 csrParsed = cReq?.GetCertificationRequestInfo();
-
-                var profile = new Profile {Id = productInfo.ProductID};
-                req.Profile = profile;
-                var seat = new Seat {SeatId = productInfo.ProductParameters["Seat"]};
-                var validity = new Validity
-                {
-                    Unit = "years", Duration = Convert.ToInt32(productInfo.ProductParameters["Validity (Years)"])
-                };
-                attributes.CommonName = GetValueFromCsr("CN", csrParsed);
-                attributes.Country = GetValueFromCsr("C", csrParsed);
-                req.Validity = validity;
-                req.Seat = seat;
-                req.Csr = csr;
             }
+            
+            string path = Directory.GetCurrentDirectory();
+            JObject jsonTemplate = JObject.Parse(File.ReadAllText(path + productInfo.ProductParameters["EnrollmentTemplate"]));
+            var jsonResult = jsonTemplate.ToString();
 
-            switch (productInfo.ProductID)
+            //1. Loop through list of Product Parameters and replace in JSON
+            foreach (var productParam in productInfo.ProductParameters)
             {
-                case "2.16.840.1.113733.1.16.1.2.3.6.1.1266772938":
-                    var pn = new UserPrincipalName();
-                    pn.Id = "otherNameUPN";
-                    pn.Value = productInfo.ProductParameters["User Principal Name"];
-                    var pnList = new List<UserPrincipalName>
-                    {
-                        pn
-                    };
-                    sn.UserPrincipalName = pnList;
-                    attributes.San = sn;
-                    break;
-                case "2.16.840.1.113733.1.16.1.5.2.5.1.1266771486":
-                    var dns = new DnsName();
-                    dns.Id = "dnsName";
-                    dns.Value = GetValueFromCsr("CN", csrParsed);
-                    var dnsList = new List<DnsName>
-                    {
-                        dns
-                    };
-                    sn.DnsName = dnsList;
-                    attributes.San = sn;
-                    break;
+                jsonResult = ReplaceProductParam(productParam, jsonResult);
+            }
+            //Clean up the Numeric values remove double quotes
+            jsonResult = jsonResult.Replace("\"Numeric|", "");
+            jsonResult = jsonResult.Replace("|Numeric\"", "");
+
+            //2. Loop though list of Parsed CSR Elements and replace in JSON
+            var csrValues = csrParsed?.Subject.ToString().Split(',');
+            if (csrValues != null)
+                foreach (var csrValue in csrValues)
+                {
+                    var nmValPair = csrValue.Split('=');
+                    jsonResult = ReplaceCsrEntry(nmValPair, jsonResult);
+                }
+
+            //3. Replace the RAW CSR content
+            jsonResult = jsonResult.Replace("CSR|RAW", csr);
+
+            //4. Deserialize Back to EnrollmentRequest
+            var enrollmentRequest = JsonConvert.DeserializeObject<EnrollmentRequest>(jsonResult);
+
+            //5. Loop through SANS and replace in Object
+            var dnsList = new List<DnsName>();
+            var dnsKp = san["DNS Name"];
+            foreach (var item in dnsKp)
+            {
+                DnsName dns = new DnsName { Value = item };
+                dnsList.Add(dns);
             }
 
-            req.Attributes = attributes;
-            return req;
+            //6. Loop through OUs and replace in Object
+            var organizationalUnits = GetValueFromCsr("OU", csrParsed).Split('/');
+
+            var orgUnits = new List<OrganizationUnit>();
+            var i = 1;
+            foreach (var ou in organizationalUnits)
+            {
+                var organizationUnit = new OrganizationUnit { Id = "cert_org_unit" + i, Value = ou };
+                orgUnits.Add(organizationUnit);
+                i++;
+            }
+
+
+            var attributes = enrollmentRequest.Attributes;
+            attributes.OrganizationUnit = orgUnits;
+            sn.DnsName = dnsList;
+            attributes.San = sn;
+            enrollmentRequest.Attributes = attributes;
+
+            return enrollmentRequest;
         }
 
         public EnrollmentResult
@@ -209,6 +227,18 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             }
 
             return "";
+        }
+
+        private static string ReplaceProductParam(KeyValuePair<string, string> productParam, string jsonResult)
+        {
+            return jsonResult.Replace("EnrollmentParam|" + productParam.Key, productParam.Value);
+        }
+
+        private static string ReplaceCsrEntry(string[] nameValuePair, string jsonResult)
+        {
+            string pattern = @"\b" + "CSR\\|" + nameValuePair[0] + @"\b";
+            string replace = nameValuePair[1];
+            return Regex.Replace(jsonResult, pattern, replace);
         }
     }
 }
