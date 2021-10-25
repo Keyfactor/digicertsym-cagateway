@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using CAProxy.AnyGateway.Models;
 using CSS.PKI;
@@ -110,8 +111,12 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 var cReq = reader.ReadObject() as Pkcs10CertificationRequest;
                 csrParsed = cReq?.GetCertificationRequestInfo();
             }
-            
-            string path = Directory.GetCurrentDirectory();
+
+            string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+            UriBuilder uri = new UriBuilder(codeBase);
+            string path = Uri.UnescapeDataString(uri.Path);
+            path=Path.GetDirectoryName(path) + "\\";
+
             JObject jsonTemplate = JObject.Parse(File.ReadAllText(path + productInfo.ProductParameters["EnrollmentTemplate"]));
             var jsonResult = jsonTemplate.ToString();
 
@@ -141,10 +146,10 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
             //5. Loop through SANS and replace in Object
             var dnsList = new List<DnsName>();
-            var dnsKp = san["DNS Name"];
+            var dnsKp = san["dns"];
             foreach (var item in dnsKp)
             {
-                DnsName dns = new DnsName { Value = item };
+                DnsName dns = new DnsName {Id="dnsName", Value = item };
                 dnsList.Add(dns);
             }
 
