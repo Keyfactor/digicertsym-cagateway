@@ -1,2 +1,0 @@
-C:\Users\bhill\source\repos\digicertsym-cagateway\TestConsole\obj\Debug\TestConsole.csprojAssemblyReference.cache
-C:\Users\bhill\source\repos\digicertsym-cagateway\TestConsole\obj\Debug\TestConsole.csproj.CoreCompileInputs.cache
