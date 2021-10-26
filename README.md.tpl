@@ -174,6 +174,8 @@ Since there are infinate number of profile configurations in DigiCertSym mPKI, t
 
 These tempates files must be copied into the same directory as the Gateway binaries and saved as a JSON file with the same name outlined in the tempates section above.
 
+Sample Enrollment Template is [here](https://github.com/Keyfactor/digicertsym-cagateway/raw/main/FAA-StandardRequest.json)
+
 1) **EnrollmentParam** - Below is a sample Enrollment Template where anything Prefixed with "EnrollmentParam|FieldName" will be replaced with an enrollment field value from the Keyfactor portal during enrollment. 
 2) **CSR|RAW** - Below is a sample Enrollment Template where anything Prefixed with "CSR|RAW" will be replaced with the raw CSR content from the enrollment request from Keyfactor Portal. 
 3) **CSR|CSRContent** - Below is a sample Enrollment Template where anything Prefixed with "CSR|CSRContent" will be replaced with the CSR content from the enrollment request from Keyfactor Portal. 
@@ -198,6 +200,10 @@ These tempates files must be copied into the same directory as the Gateway binar
 	}
 }
 ```
+
+4) **Sample Mapping Below**
+![](Images/CertStoreType-CustomFields.gif)
+
 
 - **Gateway Settings**
 ```
