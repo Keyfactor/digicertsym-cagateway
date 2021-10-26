@@ -124,12 +124,12 @@ the CA.  Without the imported configuration, the service will fail to start.
 ```
 - **Digicert mPKI Environment Settings** (Modify these with the production keys and Urls obtained from your private mPKI portal) 
 
-   1) DigiCertSymUrl - Prod or rest Url to the DigiCertSym mPKI Api
-   2) ApiKey - Key generated from the DigiCertSym mPKI API Settings section
-   3) KeyfactorApiUserId - User in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
-   4) KeyfactorApiPassword - Password for user in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
-   5) KeyfactorApiUrl - URL for Keyfactor API for REST API Calls to Keyfactor
-   6) SeatList - Comma Separated list of Seats to inventory for the Gateway inventory process
+   1) **DigiCertSymUrl** - Prod or rest Url to the DigiCertSym mPKI Api
+   2) **ApiKey** - Key generated from the DigiCertSym mPKI API Settings section
+   3) **KeyfactorApiUserId** - User in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
+   4) **KeyfactorApiPassword** - Password for user in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
+   5) **KeyfactorApiUrl** - URL for Keyfactor API for REST API Calls to Keyfactor
+   6) **SeatList** - Comma Separated list of Seats to inventory for the Gateway inventory process
 ```
 	"CAConnection": {
 		"DigiCertSymUrl": "https://pki-ws-rest.symauth.com/mpki/api/v1",
@@ -144,8 +144,8 @@ the CA.  Without the imported configuration, the service will fail to start.
 
 
 - **Template Settings**
-   1) ProductID - OID for profile generated in Digicert mPKI
-   2) EnrollmentTemplate - Template JSON used to generate a enrollment request explained later in this document
+   1) **ProductID** - OID for profile generated in Digicert mPKI
+   2) **EnrollmentTemplate** - Template JSON used to generate a enrollment request explained later in this document
 ```
 	"Templates": {
 		"Microsoft Wi-Fi (Test Drive)": {
@@ -174,9 +174,9 @@ Since there are infinate number of profile configurations in DigiCertSym mPKI, t
 
 These tempates files must be copied into the same directory as the Gateway binaries and saved as a JSON file with the same name outlined in the tempates section above.
 
-1) EnrollmentParam - Below is a sample Enrollment Template where anything Prefixed with "EnrollmentParam|FieldName" will be replaced with an enrollment field value from the Keyfactor portal during enrollment. 
-2) CSR|RAW - Below is a sample Enrollment Template where anything Prefixed with "CSR|RAW" will be replaced with the raw CSR content from the enrollment request from Keyfactor Portal. 
-3) CSR|CSRContent - Below is a sample Enrollment Template where anything Prefixed with "CSR|CSRContent" will be replaced with the CSR content from the enrollment request from Keyfactor Portal. 
+1) **EnrollmentParam** - Below is a sample Enrollment Template where anything Prefixed with "EnrollmentParam|FieldName" will be replaced with an enrollment field value from the Keyfactor portal during enrollment. 
+2) **CSR|RAW** - Below is a sample Enrollment Template where anything Prefixed with "CSR|RAW" will be replaced with the raw CSR content from the enrollment request from Keyfactor Portal. 
+3) **CSR|CSRContent** - Below is a sample Enrollment Template where anything Prefixed with "CSR|CSRContent" will be replaced with the CSR content from the enrollment request from Keyfactor Portal. 
 
 ```
 {
@@ -221,19 +221,19 @@ These tempates files must be copied into the same directory as the Gateway binar
   }
 ```
 
-5) Gateway Server - Save the newly modified config.json to the following location "C:\Program Files\Keyfactor\Keyfactor AnyGateway"
+5) **Gateway Server** - Save the newly modified config.json to the following location "C:\Program Files\Keyfactor\Keyfactor AnyGateway"
 
 ### Template Installation
 
-1) Command Server - Install a tempate into Active Directory to match each profile that you want to integrate with in DigiCertSym mPKI
+1) **Command Server** - Install a tempate into Active Directory to match each profile that you want to integrate with in DigiCertSym mPKI
 
 ### Certificate Authority Installation
-1) Gateway Server - Start the Keyfactor Gateway Service
+1) **Gateway Server** - Start the Keyfactor Gateway Service
 2) Run the set Gateway command similar to below
 ```ps
 Set-KeyfactorGatewayConfig -LogicalName "CSCGlobal" -FilePath [path to json file] -PublishAd
 ```
-3) Command Server - Import the certificate authority in Keyfactor Portal 
+3) **Command Server** - Import the certificate authority in Keyfactor Portal 
 
 
 ***
