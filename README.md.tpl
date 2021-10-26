@@ -3,14 +3,16 @@
 
 {{ description }}
 
+## {{ status | capitalize }} Ready
+
 <!-- add integration specific information below -->
 *** 
 # Getting Started
 ## Standard Gateway Installation
-To begin, you must have the CA Gateway Service 21.3.2 installed and operational before attempting to configure the CSC Global plugin. This integration was tested with Keyfactor 8.7.0.0.
+To begin, you must have the CA Gateway Service 21.3.2 installed and operational before attempting to configure the DigiCertSym mPKI plugin. This integration was tested with Keyfactor 9.1.0.0.
 To install the gateway follow these instructions.
 
-1) Gateway Server - run the installation .msi located [Here](https://github.com/Keyfactor/CSCGlobal-AnyGateway-BJC/raw/main/AnyGateway-21.3.2.msi)
+1) Gateway Server - Get the latest gateway .msi installer from Keyfactor and run the installation on the gateway server.
 
 2) Gateway Server - If you have the rights to install the database (usually in a Non SQL PAAS Environment) Using Powershell, run the following command to create the gateway database.
 
@@ -76,26 +78,26 @@ To install the gateway follow these instructions.
 ---
 
 
-## CSC Global AnyGateway Specific Configuration
-It is important to note that importing the  CSC Global configuration into the CA Gateway prior to installing the binaries must be completed. Additionally, the CA Gateway service
+## DigiCertSym mPKI Global AnyGateway Specific Configuration
+It is important to note that importing the DigiCertSym mPKI configuration into the CA Gateway prior to installing the binaries must be completed. Additionally, the CA Gateway service
 must be running in order to succesfully import the configuation. When the CA Gateway service starts it will attempt to validate the connection information to 
 the CA.  Without the imported configuration, the service will fail to start.
 
 ### Binary Installation
 
-1) Get the Latest Zip File from [Here](https://github.com/Keyfactor/CSCGlobal-AnyGateway-BJC/releases/download/v1.0.0-beta.0/CSCGlobal-AnyGateway-BJC.zip)
-2) Gateway Server - Copy the CscGlobalCaProxy.dll to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
+1) Get the Latest Zip File from [Here](https://github.com/Keyfactor/digicertsym-cagateway/releases)
+2) Gateway Server - Copy the DigiCertSymProxy.dll to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
 
 ### Configuration Changes
 1) Gateway Server - Edit the CAProxyServer.exe.config file and replace the line that says "NoOp" with the line below:
    ```
-   <alias alias="CAConnector" type="Keyfactor.AnyGateway.CscGlobal.CscGlobalCaProxy, CscGlobalCaProxy"/>
+	<alias alias="CAConnector" type="Keyfactor.AnyGateway.DigiCertSym.DigiCertSymProxy, DigiCertSymProxy"/>
    ```
-2) Gateway Server - Install the Root CSC Global Certificate that was received from CSC Global [Here](https://github.com/Keyfactor/CSCGlobal-AnyGateway-BJC/raw/main/AAACertificateServices.crt)
+2) Gateway Server - Install the Root Digicert Certificate that was found in the "Manage CAs" Settings Menu in the Digicert mPKI Portal
 
-3) Gateway Server - Install the Intermediate CSC Global Certificate that was received from CSC Global [Here](https://github.com/Keyfactor/CSCGlobal-AnyGateway-BJC/raw/main/TrustedSecureCertificateAuthority5.crt)
+3) Gateway Server - Install the Intermediate Digicert Certificate that was found in the "Manage CAs" Settings Menu in the Digicert mPKI Portal
 
-4) Gateway Server - Take the sample Config.json located [Here](https://github.com/Keyfactor/CSCGlobal-AnyGateway-BJC/raw/main/SampleConfig.json) and make the following modifications
+4) Gateway Server - Take the sample Config.json located [Here](https://github.com/Keyfactor/digicertsym-cagateway/raw/main/SampleConfig.json) and make the following modifications
 
 - *Security Settings Modifications* (Swap this out for the typical Gateway Security Settings for Test or Prod)
 
@@ -120,56 +122,92 @@ the CA.  Without the imported configuration, the service will fail to start.
       "ADMINISTRATOR": "Allow"
     }
 ```
-- *CSC Global Environment Settings* (Modify these with the keys and Urls obtained from Csc Global)
+- *Digicert mPKI Environment Settings* (Modify these with the production keys and Urls obtained from your private mPKI portal) 
+
+   1) DigiCertSymUrl - Prod or rest Url to the DigiCertSym mPKI Api
+   2) ApiKey - Key generated from the DigiCertSym mPKI API Settings section
+   3) KeyfactorApiUserId - User in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
+   4) KeyfactorApiPassword - Password for user in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
+   5) KeyfactorApiUrl - URL for Keyfactor API for REST API Calls to Keyfactor
+   6) SeatList - Comma Separated list of Seats to inventory for the Gateway inventory process
 ```
-  "CAConnection": {
-    "CscGlobalURL": "https://apis-ote.cscglobal.com/dbs/api/v2",
-    "ApiKey": "SALDJDSFKLDFS",
-    "BearerToken": "ASDLKFSALDKSDALK",
-    "FromEmailAddress":"noReply@keyfactor.com",
-    "CscGlobalEmail":"ServiceNowEmail@ServiceNow.com",
-    "KeyfactorApiUserId":"SomeUserForKFAPI",
-    "KeyfactorApiPassword":"SomePasswordForKFApi",
-    "KeyfactorApiUrl":"https://kftrain.keyfactor.lab/KeyfactorAPI",
-    "SmtpEmailHost":"smtp.mailgun.org",
-    "EmailUserId":"SomeSTMPServiceUserId",
-    "EmailPassword":"SomeSMTPServicePassword",
-    "EmailPort":"587",
-    "TemplateSync": "On"
-  }
+	"CAConnection": {
+		"DigiCertSymUrl": "https://pki-ws-rest.symauth.com/mpki/api/v1",
+		"ApiKey": "01cb64eba8173b53a9_E2FEF2DB64730C9332B964104E2248CEA05C7D8A6F2BBE02CD535DD51FA78B2E",
+		"KeyfactorApiUserId": "Keyfactor\\Administrator",
+		"KeyfactorApiPassword": "Password1",
+		"KeyfactorApiUrl": "https://kftrain.keyfactor.lab/KeyfactorAPI",
+		"SeatList": "Keyfactor Portal,www.boingy.com"
+	}
 ```
 
+
+
 - *Template Settings*
+   1) ProductID - OID for profile generated in Digicert mPKI
+   2) EnrollmentTemplate - Template JSON used to generate a enrollment request explained later in this document
 ```
-  "Templates": {
-    "CSC TrustedSecure Premium Certificate": {
-      "ProductID": "CSC TrustedSecure Premium Certificate",
-      "Parameters": {}
-    },
-    "CSC TrustedSecure EV Certificate": {
-      "ProductID": "CSC TrustedSecure EV Certificate",
-      "Parameters": {}
-    },
-    "CSC TrustedSecure UC Certificate": {
-      "ProductID": "CSC TrustedSecure UC Certificate",
-      "Parameters": {}
-    },
-    "CSC TrustedSecure Premium Wildcard Certificate": {
-      "ProductID": "CSC TrustedSecure Premium Wildcard Certificate",
-      "Parameters": {}
-    }
-  }
+	"Templates": {
+		"Microsoft Wi-Fi (Test Drive)": {
+			"ProductID": "2.16.840.1.113733.1.16.1.2.3.6.1.1266772938",
+			"Parameters": {
+				"EnrollmentTemplate": "Wifi-StandardRequest.json"
+			}
+		},
+		"Private Server certificates (Test Drive)": {
+			"ProductID": "2.16.840.1.113733.1.16.1.5.2.5.1.1266771486",
+			"Parameters": {
+				"EnrollmentTemplate": "PriverServer-StandardRequest.json"
+			}
+		},
+		"FAA-TEST-WS-INTERNAL": {
+			"ProductID": "2.16.840.1.113733.1.16.1.5.2.5.1.1280209757",
+			"Parameters": {
+				"EnrollmentTemplate": "FAA-StandardRequest.json"
+			}
+		}
+	}
+```
+
+- *Enrollment Templates*
+Since there are infinate number of profile configurations in DigiCertSym mPKI, these tempates are used to shell out the request for each profile and during the enrollment process will be replaced with data from the Enrollment request in Keyfactor.
+
+These tempates files must be copied into the same directory as the Gateway binaries and saved as a JSON file with the same name outlined in the tempates section above.
+
+1) EnrollmentParam - Below is a sample Enrollment Template where anything Prefixed with "EnrollmentParam|FieldName" will be replaced with an enrollment field value from the Keyfactor portal during enrollment. 
+2) CSR|RAW - Below is a sample Enrollment Template where anything Prefixed with "CSR|RAW" will be replaced with the raw CSR content from the enrollment request from Keyfactor Portal. 
+3) CSR|CSRContent - Below is a sample Enrollment Template where anything Prefixed with "CSR|CSRContent" will be replaced with the CSR content from the enrollment request from Keyfactor Portal. 
+
+```
+{
+	"profile": {
+		"id": "2.16.840.1.113733.1.16.1.5.2.5.1.1280209757"
+	},
+	"seat": {
+		"seat_id": "EnrollmentParam|Seat"
+	},
+	"csr": "CSR|RAW",
+	"validity": {
+		"unit": "years",
+		"duration": "Numeric|EnrollmentParam|Validity (Years)|Numeric"
+	},
+	"attributes": {
+		"common_name": "CSR|CN",
+		"country": "CSR|C",
+		"organization_name": "CSR|O"
+	}
+}
 ```
 
 - *Gateway Settings*
 ```
   "CertificateManagers": null,
   "GatewayRegistration": {
-    "LogicalName": "CscGlobal",
+    "LogicalName": "DigiCertSym",
     "GatewayCertificate": {
       "StoreName": "CA",
       "StoreLocation": "LocalMachine",
-      "Thumbprint": "525c47fb3a5e0655fbd4be963ca1e94d5fecb43d"
+      "Thumbprint": "7c0d887f94559bb151d399e978aa89e9179cf1ad"
     }
   }
 ```

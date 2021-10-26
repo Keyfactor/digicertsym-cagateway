@@ -1,7 +1,7 @@
 {
     "$schema": "https://keyfactor.github.io/integration-manifest-schema.json",
     "integration_type": "ca-gateway",
-    "name": "DigiCert",
+    "name": "DigiCert mPKI AnyGateway",
     "status": "Development",
-    "description": "Description Goes Here"
+    "description": "This gateway integration supports the Digicert MPKI platform. It handles Enrollment, Renewal, Revoke and inventory by multiple seat Ids."
 }
