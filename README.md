@@ -122,7 +122,7 @@ the CA.  Without the imported configuration, the service will fail to start.
       "ADMINISTRATOR": "Allow"
     }
 ```
-- *Digicert mPKI Environment Settings* (Modify these with the production keys and Urls obtained from your private mPKI portal) 
+- **Digicert mPKI Environment Settings** (Modify these with the production keys and Urls obtained from your private mPKI portal) 
 
    1) DigiCertSymUrl - Prod or rest Url to the DigiCertSym mPKI Api
    2) ApiKey - Key generated from the DigiCertSym mPKI API Settings section
@@ -143,7 +143,7 @@ the CA.  Without the imported configuration, the service will fail to start.
 
 
 
-- *Template Settings*
+- **Template Settings**
    1) ProductID - OID for profile generated in Digicert mPKI
    2) EnrollmentTemplate - Template JSON used to generate a enrollment request explained later in this document
 ```
@@ -169,7 +169,7 @@ the CA.  Without the imported configuration, the service will fail to start.
 	}
 ```
 
-- *Enrollment Templates*
+- **Enrollment Templates**
 Since there are infinate number of profile configurations in DigiCertSym mPKI, these tempates are used to shell out the request for each profile and during the enrollment process will be replaced with data from the Enrollment request in Keyfactor.
 
 These tempates files must be copied into the same directory as the Gateway binaries and saved as a JSON file with the same name outlined in the tempates section above.
@@ -199,7 +199,7 @@ These tempates files must be copied into the same directory as the Gateway binar
 }
 ```
 
-- *Gateway Settings*
+- **Gateway Settings**
 ```
   "CertificateManagers": null,
   "GatewayRegistration": {
@@ -212,7 +212,7 @@ These tempates files must be copied into the same directory as the Gateway binar
   }
 ```
 
-- *Service Settings* (Modify these to be in accordance with Keyfactor Standard Gateway Production Settings)
+- **Service Settings** (Modify these to be in accordance with Keyfactor Standard Gateway Production Settings)
 ```
   "ServiceSettings": {
     "ViewIdleMinutes": 1,
@@ -225,13 +225,7 @@ These tempates files must be copied into the same directory as the Gateway binar
 
 ### Template Installation
 
-1) Command Server - Copy and Unzip the Template Setup Files located [Here](https://github.com/Keyfactor/CSCGlobal-AnyGateway-BJC/raw/main/TemplateSetup.zip)
-2) Command Server - Change the Security Settings in the CaTemplateUserSecurity.csv file to the appropriate settings for Test or Production
-3) Command Server - Run the CreateTemplate.ps1 file and choose option 1 to create the templates in active directory.
-   *Note if you get errors the security is likely wrong and you will have to add the security manually according to Keyfactor standards* 
-4) Command Server - Use the Keyfactor Portal to Import the Templates created in Active Directory in step #3 above
-5) Command Server - Run the CreateTemplate.ps1 file and choose option 3 to create all the enrollment fields.  
-   *Note You will have to override the default API Questions to the appropriate information.*
+1) Command Server - Install a tempate into Active Directory to match each profile that you want to integrate with in DigiCertSym mPKI
 
 ### Certificate Authority Installation
 1) Gateway Server - Start the Keyfactor Gateway Service
@@ -241,33 +235,6 @@ Set-KeyfactorGatewayConfig -LogicalName "CSCGlobal" -FilePath [path to json file
 ```
 3) Command Server - Import the certificate authority in Keyfactor Portal 
 
-### Service Now Additions
-The Service Now Additions allow for emails to be sent to Service Now that can be parsed during enrollment and during the sync process to accomodate specific client needs.
-
-1) Gateway Server - SMTP Settings - In the sample config make the following changes in the SampleConfig.json shared above.  This must be a valid smtp service.
-
-- *Firewall Notes* (Ensure that the firewall settings on the gateway server and Command Server allow SMTP emails to be sent)
-```
-  "CAConnection": {
-    "FromEmailAddress":"noReply@keyfactor.com",
-    "CscGlobalEmail":"ServiceNowEmail@ServiceNow.com",
-    "SmtpEmailHost":"smtp.mailgun.org",
-    "EmailUserId":"SomeSTMPServiceUserId",
-    "EmailPassword":"SomeSMTPServicePassword",
-    "EmailPort":"587"
-  }
-```
-
-2) Gateway Server - KeyfactorApi Settings.  The Api User will need access to get Certificates in Keyfactor Command.
-```
-  "CAConnection": {
-    "KeyfactorApiUserId":"SomeKeyfactorUserForAPI",
-    "KeyfactorApiPassword":"SomePasswordForKFAPI",
-    "KeyfactorApiUrl":"https://kftrain.keyfactor.lab/KeyfactorAPI"
-  },
-```
-
-For The Keyfactor API, there must be a host entry to point to the internal IP of the Keyfactor Command Server.
 
 ***
 
