@@ -1,54 +1,64 @@
 {
-  "Security": {
-    "KEYFACTOR\\administrator": {
-      "READ": "Allow",
-      "ENROLL": "Allow",
-      "OFFICER": "Allow",
-      "ADMINISTRATOR": "Allow"
-    },
-    "KEYFACTOR\\SVC_AppPool": {
-      "READ": "Allow",
-      "ENROLL": "Allow",
-      "OFFICER": "Allow",
-      "ADMINISTRATOR": "Allow"
-    },
-    "KEYFACTOR\\SVC_TimerService": {
-      "READ": "Allow",
-      "ENROLL": "Allow",
-      "OFFICER": "Allow",
-      "ADMINISTRATOR": "Allow"
-    }
-  },
-  "CAConnection": {
-    "DigiCertSymUrl": "https://pki-ws-rest.symauth.com/mpki/api/v1",
-    "ApiKey": "01cb64eba8173b53a9_E2FEF2DB64730C9332B964104E2248CEA05C7D8A6F2BBE02CD535DD51FA78B2E",
-    "KeyfactorApiUserId":"Keyfactor\\Administrator",
-    "KeyfactorApiPassword":"Password1",
-    "KeyfactorApiUrl":"https://kftrain.keyfactor.lab/KeyfactorAPI",
-    "SeatList":"Keyfactor Portal,www.boingy.com"
-  },
-  "Templates": {
-    "Microsoft Wi-Fi (Test Drive)": {
-      "ProductID": "2.16.840.1.113733.1.16.1.2.3.6.1.1266772938",
-      "Parameters": {}
-    },
-    "Private Server certificates (Test Drive)": {
-      "ProductID": "2.16.840.1.113733.1.16.1.5.2.5.1.1266771486",
-      "Parameters": {}
-    }
-  },
-  "CertificateManagers": null,
-  "GatewayRegistration": {
-    "LogicalName": "DigiCertSym",
-    "GatewayCertificate": {
-      "StoreName": "CA",
-      "StoreLocation": "LocalMachine",
-      "Thumbprint": "7c0d887f94559bb151d399e978aa89e9179cf1ad"
-    }
-  },
-  "ServiceSettings": {
-    "ViewIdleMinutes": 1,
-    "FullScanPeriodHours": 1,
-    "PartialScanPeriodMinutes": 1
-  }
+	"Security": {
+		"KEYFACTOR\\administrator": {
+			"READ": "Allow",
+			"ENROLL": "Allow",
+			"OFFICER": "Allow",
+			"ADMINISTRATOR": "Allow"
+		},
+		"KEYFACTOR\\SVC_AppPool": {
+			"READ": "Allow",
+			"ENROLL": "Allow",
+			"OFFICER": "Allow",
+			"ADMINISTRATOR": "Allow"
+		},
+		"KEYFACTOR\\SVC_TimerService": {
+			"READ": "Allow",
+			"ENROLL": "Allow",
+			"OFFICER": "Allow",
+			"ADMINISTRATOR": "Allow"
+		}
+	},
+	"CAConnection": {
+		"DigiCertSymUrl": "https://pki-ws-rest.symauth.com/mpki/api/v1",
+		"ApiKey": "01cb64eba8173b53a9_E2FEF2DB64730C9332B964104E2248CEA05C7D8A6F2BBE02CD535DD51FA78B2E",
+		"KeyfactorApiUserId": "Keyfactor\\Administrator",
+		"KeyfactorApiPassword": "Password1",
+		"KeyfactorApiUrl": "https://kftrain.keyfactor.lab/KeyfactorAPI",
+		"SeatList": "Keyfactor Portal,www.boingy.com"
+	},
+	"Templates": {
+		"Microsoft Wi-Fi (Test Drive)": {
+			"ProductID": "2.16.840.1.113733.1.16.1.2.3.6.1.1266772938",
+			"Parameters": {
+				"EnrollmentTemplate": "Wifi-StandardRequest.json"
+			}
+		},
+		"Private Server certificates (Test Drive)": {
+			"ProductID": "2.16.840.1.113733.1.16.1.5.2.5.1.1266771486",
+			"Parameters": {
+				"EnrollmentTemplate": "PriverServer-StandardRequest.json"
+			}
+		},
+		"FAA-TEST-WS-INTERNAL": {
+			"ProductID": "2.16.840.1.113733.1.16.1.5.2.5.1.1280209757",
+			"Parameters": {
+				"EnrollmentTemplate": "FAA-StandardRequest.json"
+			}
+		}
+	},
+	"CertificateManagers": null,
+	"GatewayRegistration": {
+		"LogicalName": "DigiCertSym",
+		"GatewayCertificate": {
+			"StoreName": "CA",
+			"StoreLocation": "LocalMachine",
+			"Thumbprint": "7c0d887f94559bb151d399e978aa89e9179cf1ad"
+		}
+	},
+	"ServiceSettings": {
+		"ViewIdleMinutes": 1,
+		"FullScanPeriodHours": 1,
+		"PartialScanPeriodMinutes": 1
+	}
 }
