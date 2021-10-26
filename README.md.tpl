@@ -202,7 +202,7 @@ Sample Enrollment Template is [here](https://github.com/Keyfactor/digicertsym-ca
 ```
 
 4) **Sample Mapping Below**
-![](Images/CertStoreType-CustomFields.gif)
+![](Images/SampleMapping.gif)
 
 
 - **Gateway Settings**
