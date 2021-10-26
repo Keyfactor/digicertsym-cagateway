@@ -12,9 +12,9 @@ This gateway integration supports the Digicert MPKI platform. It handles Enrollm
 To begin, you must have the CA Gateway Service 21.3.2 installed and operational before attempting to configure the DigiCertSym mPKI plugin. This integration was tested with Keyfactor 9.1.0.0.
 To install the gateway follow these instructions.
 
-1) Gateway Server - Get the latest gateway .msi installer from Keyfactor and run the installation on the gateway server.
+1) **Gateway Server** - Get the latest gateway .msi installer from Keyfactor and run the installation on the gateway server.
 
-2) Gateway Server - If you have the rights to install the database (usually in a Non SQL PAAS Environment) Using Powershell, run the following command to create the gateway database.
+2) **Gateway Server** - If you have the rights to install the database (usually in a Non SQL PAAS Environment) Using Powershell, run the following command to create the gateway database.
 
    **SQL Server Windows Auth**
     ```
@@ -44,14 +44,14 @@ To install the gateway follow these instructions.
    %InstallLocation%\DatabaseManagementConsole.exe populate -s [database server name] -d [database name] -u [sql user] -p [sql password]
    ```
 
-3) Gateway Server - run the following Powershell to import the Cmdlets
+3) **Gateway Server** - run the following Powershell to import the Cmdlets
 
    C:\Program Files\Keyfactor\Keyfactor AnyGateway\ConfigurationCmdlets.dll (must be imported into Powershell)
    ```ps
    Import-Module C:\Program Files\Keyfactor\Keyfactor AnyGateway\ConfigurationCmdlets.dll
    ```
 
-4) Gateway Server - Run the Following Powershell script to set the gateway encryption cert
+4) **Gateway Server** - Run the Following Powershell script to set the gateway encryption cert
 
    ### Set-KeyfactorGatewayEncryptionCert
    This cmdlet will generate a self-signed certificate used to encrypt the database connection string. It populates a registry value with the serial number of the certificate to be used. The certificate is stored in the LocalMachine Personal Store and the registry key populated is:
@@ -59,7 +59,7 @@ To install the gateway follow these instructions.
    HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\CertSvcProxy\Parameters\EncryptSerialNumber
    No parameters are required to run this cmdlet.
 
-5) Gateway Server - Run the following Powershell Script to Set the Database Connection
+5) **Gateway Server** - Run the following Powershell Script to Set the Database Connection
 
    ### Set-KeyfactorGatewayDatabaseConnection
    This cmdlet will set and encrypt the database connection string used by the AnyGateway service. 
@@ -86,18 +86,18 @@ the CA.  Without the imported configuration, the service will fail to start.
 ### Binary Installation
 
 1) Get the Latest Zip File from [Here](https://github.com/Keyfactor/digicertsym-cagateway/releases)
-2) Gateway Server - Copy the DigiCertSymProxy.dll to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
+2) **Gateway Server** - Copy the DigiCertSymProxy.dll to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
 
 ### Configuration Changes
-1) Gateway Server - Edit the CAProxyServer.exe.config file and replace the line that says "NoOp" with the line below:
+1) **Gateway Server** - Edit the CAProxyServer.exe.config file and replace the line that says "NoOp" with the line below:
    ```
 	<alias alias="CAConnector" type="Keyfactor.AnyGateway.DigiCertSym.DigiCertSymProxy, DigiCertSymProxy"/>
    ```
-2) Gateway Server - Install the Root Digicert Certificate that was found in the "Manage CAs" Settings Menu in the Digicert mPKI Portal
+2) **Gateway Server** - Install the Root Digicert Certificate that was found in the "Manage CAs" Settings Menu in the Digicert mPKI Portal
 
-3) Gateway Server - Install the Intermediate Digicert Certificate that was found in the "Manage CAs" Settings Menu in the Digicert mPKI Portal
+3) **Gateway Server** - Install the Intermediate Digicert Certificate that was found in the "Manage CAs" Settings Menu in the Digicert mPKI Portal
 
-4) Gateway Server - Take the sample Config.json located [Here](https://github.com/Keyfactor/digicertsym-cagateway/raw/main/SampleConfig.json) and make the following modifications
+4) **Gateway Server** - Take the sample Config.json located [Here](https://github.com/Keyfactor/digicertsym-cagateway/raw/main/SampleConfig.json) and make the following modifications
 
 - *Security Settings Modifications* (Swap this out for the typical Gateway Security Settings for Test or Prod)
 
@@ -124,12 +124,12 @@ the CA.  Without the imported configuration, the service will fail to start.
 ```
 - **Digicert mPKI Environment Settings** (Modify these with the production keys and Urls obtained from your private mPKI portal) 
 
-   1) **DigiCertSymUrl** - Prod or rest Url to the DigiCertSym mPKI Api
-   2) **ApiKey** - Key generated from the DigiCertSym mPKI API Settings section
-   3) **KeyfactorApiUserId** - User in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
-   4) **KeyfactorApiPassword** - Password for user in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
-   5) **KeyfactorApiUrl** - URL for Keyfactor API for REST API Calls to Keyfactor
-   6) **SeatList** - Comma Separated list of Seats to inventory for the Gateway inventory process
+1) **DigiCertSymUrl** - Prod or rest Url to the DigiCertSym mPKI Api
+2) **ApiKey** - Key generated from the DigiCertSym mPKI API Settings section
+3) **KeyfactorApiUserId** - User in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
+4) **KeyfactorApiPassword** - Password for user in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
+5) **KeyfactorApiUrl** - URL for Keyfactor API for REST API Calls to Keyfactor
+6) **SeatList** - Comma Separated list of Seats to inventory for the Gateway inventory process
 ```
 	"CAConnection": {
 		"DigiCertSymUrl": "https://pki-ws-rest.symauth.com/mpki/api/v1",
@@ -144,8 +144,8 @@ the CA.  Without the imported configuration, the service will fail to start.
 
 
 - **Template Settings**
-   1) **ProductID** - OID for profile generated in Digicert mPKI
-   2) **EnrollmentTemplate** - Template JSON used to generate a enrollment request explained later in this document
+1) **ProductID** - OID for profile generated in Digicert mPKI
+2) **EnrollmentTemplate** - Template JSON used to generate a enrollment request explained later in this document
 ```
 	"Templates": {
 		"Microsoft Wi-Fi (Test Drive)": {
