@@ -13,7 +13,6 @@ using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Pkcs;
-using CSS.Common.Logging;
 
 namespace Keyfactor.AnyGateway.DigiCertSym
 {
@@ -217,7 +216,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
                 Logger.Trace($"Enrollment Serialized JSON before DNS and OU, result: {JsonConvert.SerializeObject(enrollmentRequest)}");
 
-                //5. Loop through SANS and replace in Object
+                //5. Loop through DNS Entries
                 var dnsList = new List<DnsName>();
                 var dnsKp = san["dns"];
 
@@ -239,7 +238,30 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     j++;
                 }
 
-                //6. Loop through OUs and replace in Object
+                //6. Loop through User Principal Entries
+                // ReSharper disable once CollectionNeverQueried.Local
+                var upList = new List<UserPrincipalName>();
+                var upKp = san["upn"];
+
+                Logger.Trace($"upn: {upKp}");
+
+                var k = 1;
+                foreach (var item in upKp)
+                {
+                    if (j < 2)
+                    {
+                        UserPrincipalName up = new UserPrincipalName { Id = "user_principal_name", Value = item };
+                        upList.Add(up);
+                    }
+                    else
+                    {
+                        UserPrincipalName up = new UserPrincipalName{ Id = "user_principal_name" + k, Value = item };
+                        upList.Add(up);
+                    }
+                    j++;
+                }
+
+                //10. Loop through OUs and replace in Object
                 var organizationUnitsRaw = GetValueFromCsr("OU", csrParsed);
                 Logger.Trace($"Raw Organizational Units: {organizationUnitsRaw}");
                 var organizationalUnits = organizationUnitsRaw.Split('/');
@@ -257,6 +279,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 var attributes = enrollmentRequest.Attributes;
                 attributes.OrganizationUnit = orgUnits;
                 sn.DnsName = dnsList;
+                sn.UserPrincipalName = upList;
                 attributes.San = sn;
                 enrollmentRequest.Attributes = attributes;
                 Logger.Trace($"Final enrollmentRequest: {JsonConvert.SerializeObject(enrollmentRequest)}");
