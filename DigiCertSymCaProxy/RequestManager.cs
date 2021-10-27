@@ -244,7 +244,6 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 }
 
                 //6. Loop through User Principal Entries
-                // ReSharper disable once CollectionNeverQueried.Local
                 if (san.ContainsKey("upn"))
                 {
                     var upList = new List<UserPrincipalName>();
@@ -269,34 +268,26 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     }
                     sn.UserPrincipalName = upList;
                 }
-
+                
+                //7. Loop through IP Entries
                 if (san.ContainsKey("ip4") || san.ContainsKey("ip6"))
                 {
                     var ipList = new List<IpAddress>();
 
-                    if (san.ContainsKey("ip4"))
-                    {
-                        ipKP = san["ip4"];
-                    }
-                    else
-                    {
-                        ipKP= san["ip6"];
-                    }
-                    
-                    
-                    Logger.Trace($"ip: {ipKP}");
+                    var ipKp = san.ContainsKey("ip4") ? san["ip4"] : san["ip6"];
+                    Logger.Trace($"ip: {ipKp}");
 
                     var k = 1;
-                    foreach (var item in ipKP)
+                    foreach (var item in ipKp)
                     {
                         if (k < 2)
                         {
-                            IpAddress ip = new UserPrincipalName { Id = "san_ipAddress", Value = item };
+                            IpAddress ip = new IpAddress { Id = "san_ipAddress", Value = item };
                             ipList.Add(ip);
                         }
                         else
                         {
-                            IpAddress ip = new UserPrincipalName { Id = "san_ipAddress" + k, Value = item };
+                            IpAddress ip = new IpAddress { Id = "san_ipAddress" + k, Value = item };
                             ipList.Add(ip);
                         }
                         k++;
@@ -304,7 +295,33 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     sn.IpAddress = ipList;
                 }
 
-                //10. Loop through OUs and replace in Object
+                //8. Loop through mail Entries
+                if (san.ContainsKey("mail"))
+                {
+                    var mailList = new List<Rfc822Name>();
+                    var mailKp = san["mail"];
+
+                    Logger.Trace($"mail: {mailKp}");
+
+                    var k = 1;
+                    foreach (var item in mailKp)
+                    {
+                        if (k < 2)
+                        {
+                            Rfc822Name mail = new Rfc822Name { Id = "mail_email", Value = item };
+                            mailList.Add(mail);
+                        }
+                        else
+                        {
+                            Rfc822Name mail = new Rfc822Name { Id = "mail_email" + k, Value = item };
+                            mailList.Add(mail);
+                        }
+                        k++;
+                    }
+                    sn.Rfc822Name = mailList;
+                }
+
+                //9. Loop through OUs and replace in Object
                 var organizationUnitsRaw = GetValueFromCsr("OU", csrParsed);
                 Logger.Trace($"Raw Organizational Units: {organizationUnitsRaw}");
                 var organizationalUnits = organizationUnitsRaw.Split('/');
