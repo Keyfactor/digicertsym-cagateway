@@ -202,7 +202,7 @@ Sample Enrollment Template is [here](https://github.com/Keyfactor/digicertsym-ca
 ```
 
 4) **Sample Mapping Below**
-![](Images/CertStoreType-CustomFields.gif)
+![](Images/SampleMapping.gif)
 
 
 - **Gateway Settings**
@@ -237,7 +237,7 @@ Sample Enrollment Template is [here](https://github.com/Keyfactor/digicertsym-ca
 1) **Gateway Server** - Start the Keyfactor Gateway Service
 2) Run the set Gateway command similar to below
 ```ps
-Set-KeyfactorGatewayConfig -LogicalName "CSCGlobal" -FilePath [path to json file] -PublishAd
+Set-KeyfactorGatewayConfig -LogicalName "DigiCertSym" -FilePath [path to json file] -PublishAd
 ```
 3) **Command Server** - Import the certificate authority in Keyfactor Portal 
 
