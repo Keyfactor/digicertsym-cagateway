@@ -217,48 +217,91 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 Logger.Trace($"Enrollment Serialized JSON before DNS and OU, result: {JsonConvert.SerializeObject(enrollmentRequest)}");
 
                 //5. Loop through DNS Entries
-                var dnsList = new List<DnsName>();
-                var dnsKp = san["dns"];
-
-                Logger.Trace($"dnsKP: {dnsKp}");
-
-                var j = 1;
-                foreach (var item in dnsKp)
+                if (san.ContainsKey("dns"))
                 {
-                    if (j < 2)
+                    var dnsList = new List<DnsName>();
+                    var dnsKp = san["dns"];
+
+                    Logger.Trace($"dnsKP: {dnsKp}");
+
+                    var j = 1;
+                    foreach (var item in dnsKp)
                     {
-                        DnsName dns = new DnsName { Id = "dnsName", Value = item };
-                        dnsList.Add(dns);
+                        if (j < 2)
+                        {
+                            DnsName dns = new DnsName { Id = "dnsName", Value = item };
+                            dnsList.Add(dns);
+                        }
+                        else
+                        {
+                            DnsName dns = new DnsName { Id = "dnsName" + j, Value = item };
+                            dnsList.Add(dns);
+                        }
+                        j++;
                     }
-                    else
-                    {
-                        DnsName dns = new DnsName { Id = "dnsName" + j, Value = item };
-                        dnsList.Add(dns);
-                    }
-                    j++;
+
+                    sn.DnsName = dnsList;
                 }
 
                 //6. Loop through User Principal Entries
                 // ReSharper disable once CollectionNeverQueried.Local
-                var upList = new List<UserPrincipalName>();
-                var upKp = san["upn"];
-
-                Logger.Trace($"upn: {upKp}");
-
-                var k = 1;
-                foreach (var item in upKp)
+                if (san.ContainsKey("upn"))
                 {
-                    if (j < 2)
+                    var upList = new List<UserPrincipalName>();
+                    var upKp = san["upn"];
+
+                    Logger.Trace($"upn: {upKp}");
+
+                    var k = 1;
+                    foreach (var item in upKp)
                     {
-                        UserPrincipalName up = new UserPrincipalName { Id = "user_principal_name", Value = item };
-                        upList.Add(up);
+                        if (k < 2)
+                        {
+                            UserPrincipalName up = new UserPrincipalName { Id = "otherNameUPN", Value = item };
+                            upList.Add(up);
+                        }
+                        else
+                        {
+                            UserPrincipalName up = new UserPrincipalName { Id = "otherNameUPN" + k, Value = item };
+                            upList.Add(up);
+                        }
+                        k++;
+                    }
+                    sn.UserPrincipalName = upList;
+                }
+
+                if (san.ContainsKey("ip4") || san.ContainsKey("ip6"))
+                {
+                    var ipList = new List<IpAddress>();
+
+                    if (san.ContainsKey("ip4"))
+                    {
+                        ipKP = san["ip4"];
                     }
                     else
                     {
-                        UserPrincipalName up = new UserPrincipalName{ Id = "user_principal_name" + k, Value = item };
-                        upList.Add(up);
+                        ipKP= san["ip6"];
                     }
-                    j++;
+                    
+                    
+                    Logger.Trace($"ip: {ipKP}");
+
+                    var k = 1;
+                    foreach (var item in ipKP)
+                    {
+                        if (k < 2)
+                        {
+                            IpAddress ip = new UserPrincipalName { Id = "san_ipAddress", Value = item };
+                            ipList.Add(ip);
+                        }
+                        else
+                        {
+                            IpAddress ip = new UserPrincipalName { Id = "san_ipAddress" + k, Value = item };
+                            ipList.Add(ip);
+                        }
+                        k++;
+                    }
+                    sn.IpAddress = ipList;
                 }
 
                 //10. Loop through OUs and replace in Object
@@ -278,8 +321,6 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
                 var attributes = enrollmentRequest.Attributes;
                 attributes.OrganizationUnit = orgUnits;
-                sn.DnsName = dnsList;
-                sn.UserPrincipalName = upList;
                 attributes.San = sn;
                 enrollmentRequest.Attributes = attributes;
                 Logger.Trace($"Final enrollmentRequest: {JsonConvert.SerializeObject(enrollmentRequest)}");
