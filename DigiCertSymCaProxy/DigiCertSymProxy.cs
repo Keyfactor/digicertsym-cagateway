@@ -170,25 +170,39 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     case RequestUtilities.EnrollmentType.Renew:
                     case RequestUtilities.EnrollmentType.Reissue:
                         Logger.Trace("Entering Renew Enrollment");
+                        Logger.Trace("Checking To Make sure it is not one click renew (not supported)");
+                        //KeyFactor needs a better way to detect one click renewals, some flag or something
+                        if (productInfo.ProductParameters.Count > 7)
+                        {
+                            var priorCertSn = productInfo.ProductParameters["PriorCertSN"];
+                            Logger.Trace($"Renew Serial Number: {priorCertSn}");
+                            renewRequest = _requestManager.GetEnrollmentRequest(productInfo, csr, san);
 
-                        var priorCertSn = productInfo.ProductParameters["PriorCertSN"];
-                        Logger.Trace($"Renew Serial Number: {priorCertSn}");
-                        renewRequest = _requestManager.GetEnrollmentRequest(productInfo, csr, san);
-
-                        Logger.Trace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewRequest)}");
-                        var renewResponse = Task.Run(async () =>
-                                await DigiCertSymClient.SubmitRenewalAsync(priorCertSn, renewRequest))
-                            .Result;
-                        if (renewResponse?.Result == null)
+                            Logger.Trace($"Renewal Request JSON: {JsonConvert.SerializeObject(renewRequest)}");
+                            var renewResponse = Task.Run(async () =>
+                                    await DigiCertSymClient.SubmitRenewalAsync(priorCertSn, renewRequest))
+                                .Result;
+                            if (renewResponse?.Result == null)
+                                return new EnrollmentResult
+                                {
+                                    Status = 30, //failure
+                                    StatusMessage =
+                                        $"Enrollment Failed {_requestManager.FlattenErrors(renewResponse?.RegistrationError.Errors)}"
+                                };
+                            
+                            Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
+                            return _requestManager.GetRenewResponse(renewResponse);
+                        }
+                        else
+                        {
                             return new EnrollmentResult
                             {
                                 Status = 30, //failure
                                 StatusMessage =
-                                    $"Enrollment Failed {_requestManager.FlattenErrors(renewResponse?.RegistrationError.Errors)}"
+                                "One Click Renew is not available for this integration.  Need to specify validity and seat enrollment params."
                             };
+                        }
 
-                        Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
-                        return _requestManager.GetRenewResponse(renewResponse);
                 }
 
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
