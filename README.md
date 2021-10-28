@@ -176,6 +176,8 @@ These tempates files must be copied into the same directory as the Gateway binar
 
 Sample Enrollment Template is [here](https://github.com/Keyfactor/digicertsym-cagateway/raw/main/FAA-StandardRequest.json)
 
+Enrollment Format Specifications Located [here](https://pki-ws-rest.symauth.com/mpki/docs/index.html) and [here](https://pki-ws-rest.symauth.com/mpki/docs/index.html)
+
 1) **EnrollmentParam** - Below is a sample Enrollment Template where anything Prefixed with "EnrollmentParam|FieldName" will be replaced with an enrollment field value from the Keyfactor portal during enrollment. 
 2) **CSR|RAW** - Below is a sample Enrollment Template where anything Prefixed with "CSR|RAW" will be replaced with the raw CSR content from the enrollment request from Keyfactor Portal. 
 3) **CSR|CSRContent** - Below is a sample Enrollment Template where anything Prefixed with "CSR|CSRContent" will be replaced with the CSR content from the enrollment request from Keyfactor Portal. 
