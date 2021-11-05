@@ -229,12 +229,12 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     {
                         if (j < 2)
                         {
-                            DnsName dns = new DnsName { Id = "dnsName", Value = item };
+                            DnsName dns = new DnsName { Id = "custom_encode_dnsName", Value = item };
                             dnsList.Add(dns);
                         }
                         else
                         {
-                            DnsName dns = new DnsName { Id = "dnsName" + j, Value = item };
+                            DnsName dns = new DnsName { Id = "custom_encode_dnsName" + j, Value = item };
                             dnsList.Add(dns);
                         }
                         j++;
