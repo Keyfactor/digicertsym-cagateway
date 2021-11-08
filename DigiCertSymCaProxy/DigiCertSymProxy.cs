@@ -18,11 +18,10 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 {
     public class DigiCertSymProxy : BaseCAConnector
     {
-        private readonly RequestManager _requestManager;
+        private RequestManager _requestManager;
 
         public DigiCertSymProxy()
         {
-            _requestManager = new RequestManager();
         }
 
         private IDigiCertSymClient DigiCertSymClient { get; set; }
@@ -249,6 +248,13 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             try
             {
                 Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
+                _requestManager = new RequestManager
+                {
+                    DnsConstantName = configProvider.CAConnectionData["DnsConstantName"].ToString(),
+                    UpnConstantName = configProvider.CAConnectionData["UpnConstantName"].ToString(),
+                    IpConstantName = configProvider.CAConnectionData["IpConstantName"].ToString(),
+                    EmailConstantName = configProvider.CAConnectionData["EmailConstantName"].ToString()
+                };
                 DigiCertSymClient = new DigiCertSymClient(configProvider);
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
             }

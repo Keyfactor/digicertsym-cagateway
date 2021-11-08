@@ -27,6 +27,11 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             CessationOfOperation = 5
         }
 
+        public string DnsConstantName { get; set; }
+        public string UpnConstantName { get; set; }
+        public string IpConstantName { get; set; }
+        public string EmailConstantName { get; set; }
+
         public static Func<string, string> Pemify = ss =>
             ss.Length <= 64 ? ss : ss.Substring(0, 64) + "\n" + Pemify(ss.Substring(64));
 
@@ -229,12 +234,12 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     {
                         if (j < 2)
                         {
-                            DnsName dns = new DnsName { Id = "custom_encode_dnsName", Value = item };
+                            DnsName dns = new DnsName { Id = DnsConstantName, Value = item };
                             dnsList.Add(dns);
                         }
                         else
                         {
-                            DnsName dns = new DnsName { Id = "custom_encode_dnsName" + j, Value = item };
+                            DnsName dns = new DnsName { Id = DnsConstantName + j, Value = item };
                             dnsList.Add(dns);
                         }
                         j++;
@@ -256,12 +261,12 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     {
                         if (k < 2)
                         {
-                            UserPrincipalName up = new UserPrincipalName { Id = "otherNameUPN", Value = item };
+                            UserPrincipalName up = new UserPrincipalName { Id = UpnConstantName, Value = item };
                             upList.Add(up);
                         }
                         else
                         {
-                            UserPrincipalName up = new UserPrincipalName { Id = "otherNameUPN" + k, Value = item };
+                            UserPrincipalName up = new UserPrincipalName { Id = UpnConstantName + k, Value = item };
                             upList.Add(up);
                         }
                         k++;
@@ -282,12 +287,12 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     {
                         if (k < 2)
                         {
-                            IpAddress ip = new IpAddress { Id = "san_ipAddress", Value = item };
+                            IpAddress ip = new IpAddress { Id = IpConstantName, Value = item };
                             ipList.Add(ip);
                         }
                         else
                         {
-                            IpAddress ip = new IpAddress { Id = "san_ipAddress" + k, Value = item };
+                            IpAddress ip = new IpAddress { Id = IpConstantName + k, Value = item };
                             ipList.Add(ip);
                         }
                         k++;
@@ -308,12 +313,12 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     {
                         if (k < 2)
                         {
-                            Rfc822Name mail = new Rfc822Name { Id = "mail_email", Value = item };
+                            Rfc822Name mail = new Rfc822Name { Id = EmailConstantName, Value = item };
                             mailList.Add(mail);
                         }
                         else
                         {
-                            Rfc822Name mail = new Rfc822Name { Id = "mail_email" + k, Value = item };
+                            Rfc822Name mail = new Rfc822Name { Id = EmailConstantName + k, Value = item };
                             mailList.Add(mail);
                         }
                         k++;

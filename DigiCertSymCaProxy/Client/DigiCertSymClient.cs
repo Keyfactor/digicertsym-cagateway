@@ -185,14 +185,13 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
             try
             {
                 var itemsProcessed = 0;
-                var pageCounter = 1;
                 var isComplete = false;
                 var retryCount = 0;
 
                 foreach (var seat in SeatList.Split(','))
                 {
                     Logger.Trace($"Processing SeatId {seat}");
-                    pageCounter = 1;
+                    var pageCounter = 1;
                     do
                     {
                         var queryOrderRequest =
@@ -202,23 +201,23 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                             JsonConvert.SerializeObject(queryOrderRequest), Encoding.ASCII, "application/json"), ct))
                         {
 
-                        if (!resp.IsSuccessStatusCode)
-                        {
-                            var responseMessage = resp.Content.ReadAsStringAsync().Result;
-                            Logger.Trace($"Raw error response {responseMessage}");
-
-                            //igngore missing Certificate in search 404 errors
-                            if (!responseMessage.Contains("entity_not_found"))
+                            if (!resp.IsSuccessStatusCode)
                             {
-                                Logger.Error(
-                                    $"Failed Request to Digicert mPKI. Retrying request. Status Code {resp.StatusCode} | Message: {responseMessage}");
-                                retryCount++;
-                                if (retryCount > 5)
-                                    throw new RetryCountExceededException(
-                                        $"5 consecutive failures to {resp.RequestMessage.RequestUri}");
+                                var responseMessage = resp.Content.ReadAsStringAsync().Result;
+                                Logger.Trace($"Raw error response {responseMessage}");
+
+                                //igngore missing Certificate in search 404 errors
+                                if (!responseMessage.Contains("entity_not_found"))
+                                {
+                                    Logger.Error(
+                                        $"Failed Request to Digicert mPKI. Retrying request. Status Code {resp.StatusCode} | Message: {responseMessage}");
+                                    retryCount++;
+                                    if (retryCount > 5)
+                                        throw new RetryCountExceededException(
+                                            $"5 consecutive failures to {resp.RequestMessage.RequestUri}");
+                                }
+                                break; //Seat has no certs move on to the next seat
                             }
-                            break; //Seat has no certs move on to the next seat
-                        }
 
                             var response = JsonConvert.DeserializeObject<CertificateSearchResponse>(
                                 await resp.Content.ReadAsStringAsync());
