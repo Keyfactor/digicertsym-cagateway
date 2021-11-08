@@ -191,6 +191,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
 
                 foreach (var seat in SeatList.Split(','))
                 {
+                    Logger.Trace($"Processing SeatId {seat}");
                     pageCounter = 1;
                     do
                     {
@@ -204,6 +205,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                         if (!resp.IsSuccessStatusCode)
                         {
                             var responseMessage = resp.Content.ReadAsStringAsync().Result;
+                            Logger.Trace($"Raw error response {responseMessage}");
+
                             //igngore missing Certificate in search 404 errors
                             if (!responseMessage.Contains("entity_not_found"))
                             {
