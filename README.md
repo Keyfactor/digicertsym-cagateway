@@ -130,6 +130,7 @@ the CA.  Without the imported configuration, the service will fail to start.
 4) **KeyfactorApiPassword** - Password for user in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
 5) **KeyfactorApiUrl** - URL for Keyfactor API for REST API Calls to Keyfactor
 6) **SeatList** - Comma Separated list of Seats to inventory for the Gateway inventory process
+7) **ConstantNames** - These were made configurable because the digicert API expects these to be named differently depending on the setup.
 ```
 	"CAConnection": {
 		"DigiCertSymUrl": "https://pki-ws-rest.symauth.com/mpki/api/v1",
@@ -137,7 +138,11 @@ the CA.  Without the imported configuration, the service will fail to start.
 		"KeyfactorApiUserId": "Keyfactor\\Administrator",
 		"KeyfactorApiPassword": "Password1",
 		"KeyfactorApiUrl": "https://kftrain.keyfactor.lab/KeyfactorAPI",
-		"SeatList": "Keyfactor Portal,www.boingy.com"
+		"SeatList": "Keyfactor Portal,www.boingy.com",
+	        "DnsConstantName":"dnsName",
+	        "UpnConstantName":"otherNameUPN",
+	        "IpConstantName":"san_ipAddress",
+	        "EmailConstantName":"mail_email"
 	}
 ```
 
