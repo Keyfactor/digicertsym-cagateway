@@ -392,7 +392,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             {
                 Logger.Debug("Entering in FlattenErrors(List<ErrorResponse> errors) Method...");
                 var errorMessage = string.Empty;
-                foreach (var error in errors) errorMessage += error.Message + "\n";
+                foreach (var error in errors) errorMessage += "Code: " + error.Code + " Message: " + error.Message + "Field Name: " + error?.Field + "\n";
                 Logger.Debug("Exiting in FlattenErrors(List<ErrorResponse> errors) Method...");
                 return errorMessage;
             }
