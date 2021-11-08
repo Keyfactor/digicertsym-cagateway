@@ -25,7 +25,11 @@
 		"KeyfactorApiUserId": "Keyfactor\\Administrator",
 		"KeyfactorApiPassword": "Password1",
 		"KeyfactorApiUrl": "https://kftrain.keyfactor.lab/KeyfactorAPI",
-		"SeatList": "Keyfactor Portal,www.boingy.com"
+		"SeatList": "Keyfactor Portal,www.boingy.com",
+	        "DnsConstantName":"dnsName",
+	        "UpnConstantName":"otherNameUPN",
+	        "IpConstantName":"san_ipAddress",
+	        "EmailConstantName":"mail_email"
 	},
 	"Templates": {
 		"Microsoft Wi-Fi (Test Drive)": {
