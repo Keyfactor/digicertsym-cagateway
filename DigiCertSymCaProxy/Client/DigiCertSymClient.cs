@@ -185,32 +185,37 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
             try
             {
                 var itemsProcessed = 0;
-                var pageCounter = 0;
+                var pageCounter = 1;
                 var isComplete = false;
                 var retryCount = 0;
+
                 foreach (var seat in SeatList.Split(','))
                 {
+                    pageCounter = 1;
                     do
                     {
-                        pageCounter++;
                         var queryOrderRequest =
                             requestManager.GetSearchCertificatesRequest(pageCounter, seat);
                         var batchItemsProcessed = 0;
                         using (var resp = await RestClient.PostAsync("/mpki/api/v1/searchcert", new StringContent(
                             JsonConvert.SerializeObject(queryOrderRequest), Encoding.ASCII, "application/json"), ct))
                         {
-                            if (!resp.IsSuccessStatusCode)
+
+                        if (!resp.IsSuccessStatusCode)
+                        {
+                            var responseMessage = resp.Content.ReadAsStringAsync().Result;
+                            //igngore missing Certificate in search 404 errors
+                            if (!responseMessage.Contains("entity_not_found"))
                             {
-                                var responseMessage = resp.Content.ReadAsStringAsync().Result;
                                 Logger.Error(
-                                    $"Failed Request to SslStore. Retrying request. Status Code {resp.StatusCode} | Message: {responseMessage}");
+                                    $"Failed Request to Digicert mPKI. Retrying request. Status Code {resp.StatusCode} | Message: {responseMessage}");
                                 retryCount++;
                                 if (retryCount > 5)
                                     throw new RetryCountExceededException(
                                         $"5 consecutive failures to {resp.RequestMessage.RequestUri}");
-
-                                continue;
                             }
+                            break; //Seat has no certs move on to the next seat
+                        }
 
                             var response = JsonConvert.DeserializeObject<CertificateSearchResponse>(
                                 await resp.Content.ReadAsStringAsync());
@@ -240,6 +245,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                         //assume that if we process less records than requested that we have reached the end of the certificate list
                         if (batchItemsProcessed < PageSize)
                             isComplete = true;
+                        pageCounter = pageCounter + PageSize;
                     } while (!isComplete); //page loop
                 }
                 bc.CompleteAdding();
