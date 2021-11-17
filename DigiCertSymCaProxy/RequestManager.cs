@@ -202,7 +202,16 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
                 //2. Loop though list of Parsed CSR Elements and replace in JSON
                 var csrValues = csrParsed?.Subject.ToString().Split(',');
-                if (csrValues != null)
+                
+                var getCommonNameFromSubject= false;
+
+                //certBot workflow, common name always comes only through SAN and is not in common name
+                if(csrValues[0].Length > 0)
+                {
+                    getCommonNameFromSubject = true;
+                }
+
+                if (csrValues != null && getCommonNameFromSubject)
                     foreach (var csrValue in csrValues)
                     {
                         var nmValPair = csrValue.Split('=');
@@ -221,17 +230,18 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
                 Logger.Trace($"Enrollment Serialized JSON before DNS and OU, result: {JsonConvert.SerializeObject(enrollmentRequest)}");
 
-                //5. Loop through DNS Entries
+                //5. Loop through DNS Entries, if comming from Certbot, then need to get common name from here as well
                 if (san.ContainsKey("dns"))
                 {
                     var dnsList = new List<DnsName>();
                     var dnsKp = san["dns"];
-
                     Logger.Trace($"dnsKP: {dnsKp}");
+                    List<string> commonNameList = new List<string>();
 
                     var j = 1;
                     foreach (var item in dnsKp)
                     {
+                        commonNameList.Add(item);
                         if (j < 2)
                         {
                             DnsName dns = new DnsName { Id = DnsConstantName, Value = item };
@@ -244,7 +254,14 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                         }
                         j++;
                     }
+                    string commonName = string.Join(",", commonNameList);
 
+                    var jsonResultDns = JsonConvert.SerializeObject(enrollmentRequest);
+
+                    if(!getCommonNameFromSubject)
+                        jsonResultDns = ReplaceCsrEntry(new string[] {"CN", commonName }, jsonResult);
+
+                    enrollmentRequest = JsonConvert.DeserializeObject<EnrollmentRequest>(jsonResultDns);
                     sn.DnsName = dnsList;
                 }
 
