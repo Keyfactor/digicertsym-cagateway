@@ -7,6 +7,7 @@ using CAProxy.AnyGateway.Models;
 using CSS.Common.Logging;
 using CSS.PKI;
 using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
+using Keyfactor.AnyGateway.DigiCertSym.DigicertMPKISOAP;
 using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -53,6 +54,40 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                         returnStatus = PKIConstants.Microsoft.RequestDisposition.PENDING;
                         break;
                     case "REVOKED":
+                        returnStatus = PKIConstants.Microsoft.RequestDisposition.REVOKED;
+                        break;
+                    default:
+                        returnStatus = PKIConstants.Microsoft.RequestDisposition.UNKNOWN;
+                        break;
+                }
+                Logger.Trace($"returnStatus is {returnStatus}");
+                Logger.Debug("Exiting MapReturnStatus(string digiCertStatus) Method...");
+                return Convert.ToInt32(returnStatus);
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Exception Occurred in MapReturnStatus(string digiCertStatus): {e.Message}");
+                throw;
+            }
+        }
+
+        public int MapReturnStatus(CertificateStatusEnum digiCertStatus)
+        {
+            try
+            {
+                Logger.Debug("Entering MapReturnStatus(string digiCertStatus) Method...");
+                Logger.Trace($"digiCertStatus is {digiCertStatus}");
+                PKIConstants.Microsoft.RequestDisposition returnStatus;
+
+                switch (digiCertStatus)
+                {
+                    case CertificateStatusEnum.VALID:
+                        returnStatus = PKIConstants.Microsoft.RequestDisposition.ISSUED;
+                        break;
+                    case CertificateStatusEnum.SUSPENDED:
+                        returnStatus = PKIConstants.Microsoft.RequestDisposition.REVOKED;
+                        break;
+                    case CertificateStatusEnum.EXPIRED:
                         returnStatus = PKIConstants.Microsoft.RequestDisposition.REVOKED;
                         break;
                     default:
@@ -134,18 +169,20 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             }
         }
 
-        public CertificateSearchRequest GetSearchCertificatesRequest(int pageCounter, string seatId)
+        public SearchCertificateRequestType GetSearchCertificatesRequest(int pageCounter, string templateId)
         {
             try
             {
-                Logger.Debug("Entering GetSearchCertificatesRequest(int pageCounter, string seatId) Method...");
-                Logger.Debug("Exiting GetSearchCertificatesRequest(int pageCounter, string seatId) Method...");
-                Logger.Trace($"pageCounter: {pageCounter} seatId: {seatId}");
-                return new CertificateSearchRequest
+                Logger.Debug("Entering GetSearchCertificatesRequest(int pageCounter, string templateId) Method...");
+                Logger.Debug("Exiting GetSearchCertificatesRequest(int pageCounter, string templateId) Method...");
+                Logger.Trace($"pageCounter: {pageCounter} TemplateId: {templateId}");
+                return new SearchCertificateRequestType
                 {
-                    SeatId = seatId,
-                    StartIndex = pageCounter
-                };
+                    profileOID = templateId,
+                    startIndex= pageCounter,
+                    
+                    version = "1.0"
+            };
             }
             catch (Exception e)
             {

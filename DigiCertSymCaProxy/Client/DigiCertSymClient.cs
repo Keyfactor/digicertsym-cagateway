@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
+using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using CAProxy.AnyGateway.Interfaces;
+using CAProxy.AnyGateway;
+using CAProxy.AnyGateway.Models.Configuration;
 using CSS.Common.Logging;
 using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
+using Keyfactor.AnyGateway.DigiCertSym.DigicertMPKISOAP;
 using Keyfactor.AnyGateway.DigiCertSym.Exceptions;
 using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
 using Newtonsoft.Json;
@@ -17,15 +22,19 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
 {
     public sealed class DigiCertSymClient : LoggingClientBase, IDigiCertSymClient
     {
-        public DigiCertSymClient(ICAConnectorConfigProvider config)
+        public DigiCertSymClient(CAConfig config)
         {
-            if (config.CAConnectionData.ContainsKey(Constants.DigiCertSymApiKey))
-            {
+            if (config.Config.CAConnection.ContainsKey(Constants.DigiCertSymApiKey))
                 try
                 {
-                    BaseUrl = new Uri(config.CAConnectionData[Constants.DigiCertSymUrl].ToString());
-                    ApiKey = config.CAConnectionData[Constants.DigiCertSymApiKey].ToString();
-                    SeatList = config.CAConnectionData[Constants.SeatList].ToString();
+                    BaseUrl = new Uri(config.Config.CAConnection[Constants.DigiCertSymUrl].ToString());
+                    ApiKey = config.Config.CAConnection[Constants.DigiCertSymApiKey].ToString();
+                    Templates = config.Config.Templates;
+                    ClientCertificateLocation =
+                        config.Config.CAConnection[Constants.ClientCertificateLocation].ToString();
+                    ClientCertificatePassword =
+                        config.Config.CAConnection[Constants.ClientCertificatePassword].ToString();
+                    EndPointAddress = config.Config.CAConnection[Constants.EndpointAddress].ToString();
                     RestClient = ConfigureRestClient();
                 }
                 catch (Exception e)
@@ -33,13 +42,15 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                     Logger.Error($"DigiCertSymClient Constructor Error Occurred: {e.Message}");
                     throw;
                 }
-            }
         }
 
         private Uri BaseUrl { get; }
         private HttpClient RestClient { get; }
         private string ApiKey { get; }
-        private string SeatList { get; }
+        private Dictionary<string, ProductModel> Templates { get; }
+        private string EndPointAddress { get; }
+        private string ClientCertificateLocation { get; }
+        private string ClientCertificatePassword { get; }
         private int PageSize { get; } = 50;
 
 
@@ -178,71 +189,62 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
             }
         }
 
-        public async Task SubmitQueryOrderRequestAsync(BlockingCollection<ICertificateDetails> bc, CancellationToken ct,
-    RequestManager requestManager)
+        public async Task SubmitQueryOrderRequestAsync(BlockingCollection<CertificateSearchResultType> bc,
+            CancellationToken ct,
+            RequestManager requestManager)
         {
             Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
             try
             {
                 var itemsProcessed = 0;
                 var isComplete = false;
-                var retryCount = 0;
 
-                foreach (var seat in SeatList.Split(','))
+                foreach (var template in Templates.Values)
                 {
-                    Logger.Trace($"Processing SeatId {seat}");
-                    var pageCounter = 1;
+                    Logger.Trace($"Processing Template {template.ProductID}");
+                    var pageCounter = 0;
                     do
                     {
                         var queryOrderRequest =
-                            requestManager.GetSearchCertificatesRequest(pageCounter, seat);
+                            requestManager.GetSearchCertificatesRequest(pageCounter, template.ProductID);
                         var batchItemsProcessed = 0;
-                        using (var resp = await RestClient.PostAsync("/mpki/api/v1/searchcert", new StringContent(
-                            JsonConvert.SerializeObject(queryOrderRequest), Encoding.ASCII, "application/json"), ct))
+
+                        var bind = new BasicHttpsBinding();
+                        bind.Security.Transport.ClientCredentialType = HttpClientCredentialType.Certificate;
+                        var ep = new EndpointAddress(EndPointAddress);
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11;
+                        var client = new CertificateManagementOperationsClient(bind, ep);
+                        var cert = new X509Certificate2(ClientCertificateLocation, ClientCertificatePassword);
+                        if (client.ClientCredentials != null)
+                            client.ClientCredentials.ClientCertificate.Certificate = cert;
+
+
+                        var resp = await client.searchCertificateAsync(queryOrderRequest);
+
+                        if (resp.searchCertificateResponse1.certificateCount == 0)
+                            break; //Profile has no certs move on to the next Profile
+
+                        var batchResponse = resp.searchCertificateResponse1.certificateList;
+                        var batchCount = batchResponse.Length;
+
+                        Logger.Trace($"Processing {batchCount} items in batch");
+                        do
                         {
-
-                            if (!resp.IsSuccessStatusCode)
+                            var r = batchResponse[batchItemsProcessed];
+                            if (bc.TryAdd(r, 10, ct))
                             {
-                                var responseMessage = resp.Content.ReadAsStringAsync().Result;
-                                Logger.Trace($"Raw error response {responseMessage}");
-
-                                //igngore missing Certificate in search 404 errors
-                                if (!responseMessage.Contains("entity_not_found"))
-                                {
-                                    Logger.Error(
-                                        $"Failed Request to Digicert mPKI. Retrying request. Status Code {resp.StatusCode} | Message: {responseMessage}");
-                                    retryCount++;
-                                    if (retryCount > 5)
-                                        throw new RetryCountExceededException(
-                                            $"5 consecutive failures to {resp.RequestMessage.RequestUri}");
-                                }
-                                break; //Seat has no certs move on to the next seat
+                                Logger.Trace($"Added Certificate ID {r.serialNumber} to Queue for processing");
+                                batchItemsProcessed++;
+                                itemsProcessed++;
+                                Logger.Trace($"Processed {batchItemsProcessed} of {batchCount}");
+                                Logger.Trace($"Total Items Processed: {itemsProcessed}");
                             }
-
-                            var response = JsonConvert.DeserializeObject<CertificateSearchResponse>(
-                                await resp.Content.ReadAsStringAsync());
-
-                            var batchResponse = response.Certificates;
-                            var batchCount = batchResponse.Count;
-
-                            Logger.Trace($"Processing {batchCount} items in batch");
-                            do
+                            else
                             {
-                                var r = batchResponse[batchItemsProcessed];
-                                if (bc.TryAdd(r, 10, ct))
-                                {
-                                    Logger.Trace($"Added Certificate ID {r.SerialNumber} to Queue for processing");
-                                    batchItemsProcessed++;
-                                    itemsProcessed++;
-                                    Logger.Trace($"Processed {batchItemsProcessed} of {batchCount}");
-                                    Logger.Trace($"Total Items Processed: {itemsProcessed}");
-                                }
-                                else
-                                {
-                                    Logger.Trace($"Adding {r} blocked. Retry");
-                                }
-                            } while (batchItemsProcessed < batchCount); //batch loop
-                        }
+                                Logger.Trace($"Adding {r} blocked. Retry");
+                            }
+                        } while (batchItemsProcessed < batchCount); //batch loop
+
 
                         //assume that if we process less records than requested that we have reached the end of the certificate list
                         if (batchItemsProcessed < PageSize)
@@ -250,6 +252,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Client
                         pageCounter = pageCounter + PageSize;
                     } while (!isComplete); //page loop
                 }
+
                 bc.CompleteAdding();
             }
             catch (OperationCanceledException cancelEx)

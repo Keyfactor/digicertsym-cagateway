@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.ServiceModel;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CAProxy.AnyGateway;
@@ -11,6 +15,7 @@ using CSS.Common.Logging;
 using CSS.PKI;
 using Keyfactor.AnyGateway.DigiCertSym.Client;
 using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
+using Keyfactor.AnyGateway.DigiCertSym.DigicertMPKISOAP;
 using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
 using Newtonsoft.Json;
 
@@ -70,7 +75,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
         {
             try
             {
-                var certs = new BlockingCollection<ICertificateDetails>(100);
+                var certs = new BlockingCollection<CertificateSearchResultType>(100);
                 DigiCertSymClient.SubmitQueryOrderRequestAsync(certs, cancelToken, _requestManager);
 
                 foreach (var currentResponseItem in certs.GetConsumingEnumerable(cancelToken))
@@ -83,24 +88,27 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
                     try
                     {
-                        Logger.Trace($"Took Certificate ID {currentResponseItem?.SerialNumber} from Queue");
+                        Logger.Trace($"Took Certificate ID {currentResponseItem?.serialNumber} from Queue");
 
-                        var certStatus = _requestManager.MapReturnStatus(currentResponseItem?.Status);
-
-                        //Keyfactor sync only seems to work when there is a valid cert and I can only get Active valid certs from SSLStore
-                        if (certStatus == Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.ISSUED) || certStatus ==
-                            Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED))
+                        if (currentResponseItem != null)
                         {
+                            var certStatus = _requestManager.MapReturnStatus(currentResponseItem.status);
 
-                            blockingBuffer.Add(new CAConnectorCertificate
+                            //Keyfactor sync only seems to work when there is a valid cert and I can only get Active valid certs from SSLStore
+                            if (certStatus == Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.ISSUED) || certStatus ==
+                                Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED))
                             {
-                                CARequestID =
-                                    $"{currentResponseItem?.SerialNumber}",
-                                Certificate = currentResponseItem?.Certificate,
-                                SubmissionDate = Convert.ToDateTime(currentResponseItem?.ValidFrom),
-                                Status = certStatus,
-                                ProductID = $"{currentResponseItem?.Profile.Id}"
-                            }, cancelToken);
+
+                                blockingBuffer.Add(new CAConnectorCertificate
+                                {
+                                    CARequestID =
+                                        $"{currentResponseItem?.serialNumber}",
+                                    Certificate = Encoding.UTF8.GetString(currentResponseItem?.certificate ?? Array.Empty<byte>()),
+                                    SubmissionDate = Convert.ToDateTime(currentResponseItem?.validFrom),
+                                    Status = certStatus,
+                                    ProductID = $"{currentResponseItem?.profileOID}"
+                                }, cancelToken);
+                            }
                         }
                     }
                     catch (OperationCanceledException)
@@ -248,14 +256,16 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             try
             {
                 Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
+                var config = (CAConfig)configProvider;
                 _requestManager = new RequestManager
                 {
+                    
                     DnsConstantName = configProvider.CAConnectionData["DnsConstantName"].ToString(),
                     UpnConstantName = configProvider.CAConnectionData["UpnConstantName"].ToString(),
                     IpConstantName = configProvider.CAConnectionData["IpConstantName"].ToString(),
                     EmailConstantName = configProvider.CAConnectionData["EmailConstantName"].ToString()
                 };
-                DigiCertSymClient = new DigiCertSymClient(configProvider);
+                DigiCertSymClient = new DigiCertSymClient(config);
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
             }
             catch (Exception e)
