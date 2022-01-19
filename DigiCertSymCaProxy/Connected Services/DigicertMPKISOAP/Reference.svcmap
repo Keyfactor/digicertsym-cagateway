@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="2f0f2fcf-28b6-4523-8f97-ba2a0836b2eb" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="ee2a6fff-f525-47c3-b4f8-41b4d4de616b" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
   <ClientOptions>
     <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
     <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
@@ -22,8 +22,8 @@
     <MetadataSource Address="https://pki-ws.symauth.com/pki-ws/certificateManagementService?wsdl" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="certificateManagementService.wsdl" MetadataType="Wsdl" ID="fd6cd88f-37bc-4de8-9541-1f40702891c8" SourceId="1" SourceUrl="https://pki-ws.symauth.com/pki-ws/certificateManagementService?wsdl" />
-    <MetadataFile FileName="certificateManagementService.xsd" MetadataType="Schema" ID="c60f2387-9437-4a42-aba3-c8fbda36281d" SourceId="1" SourceUrl="https://pki-ws.symauth.com/pki-ws/certificateManagementService?xsd=1" />
+    <MetadataFile FileName="certificateManagementService.wsdl" MetadataType="Wsdl" ID="bd48a6f1-6129-4fbc-adf2-de4bcd689470" SourceId="1" SourceUrl="https://pki-ws.symauth.com/pki-ws/certificateManagementService?wsdl" />
+    <MetadataFile FileName="certificateManagementService.xsd" MetadataType="Schema" ID="bd48f35a-2630-49c7-a3aa-5c8219ca93b1" SourceId="1" SourceUrl="https://pki-ws.symauth.com/pki-ws/certificateManagementService?xsd=1" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Net;
-using System.Security.Cryptography.X509Certificates;
-using System.ServiceModel;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using CAProxy.AnyGateway;
 using CAProxy.AnyGateway.Interfaces;
 using CAProxy.AnyGateway.Models;
+using CAProxy.AnyGateway.Models.Configuration;
 using CAProxy.Common;
 using CSS.Common.Logging;
 using CSS.PKI;
 using Keyfactor.AnyGateway.DigiCertSym.Client;
 using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
-using Keyfactor.AnyGateway.DigiCertSym.DigicertMPKISOAP;
 using Keyfactor.AnyGateway.DigiCertSym.Interfaces;
 using Newtonsoft.Json;
 
@@ -25,11 +24,9 @@ namespace Keyfactor.AnyGateway.DigiCertSym
     {
         private RequestManager _requestManager;
 
-        public DigiCertSymProxy()
-        {
-        }
-
         private IDigiCertSymClient DigiCertSymClient { get; set; }
+
+        private Dictionary<string, ProductModel> Templates { get; set; }
 
 
         public override int Revoke(string caRequestId, string hexSerialNumber, uint revocationReason)
@@ -75,52 +72,82 @@ namespace Keyfactor.AnyGateway.DigiCertSym
         {
             try
             {
-                var certs = new BlockingCollection<CertificateSearchResultType>(100);
-                DigiCertSymClient.SubmitQueryOrderRequestAsync(certs, cancelToken, _requestManager);
-
-                foreach (var currentResponseItem in certs.GetConsumingEnumerable(cancelToken))
+                //Loop through all the Digicert Profile OIDs that are setup in the config file
+                foreach (var productModel in Templates.Values)
                 {
-                    if (cancelToken.IsCancellationRequested)
-                    {
-                        Logger.Error("Synchronize was canceled.");
-                        break;
-                    }
 
-                    try
-                    {
-                        Logger.Trace($"Took Certificate ID {currentResponseItem?.serialNumber} from Queue");
+                    var pageCounter = 0;
+                    var pageSize = 50;
+                    var result = DigiCertSymClient.SubmitQueryOrderRequest(_requestManager, productModel, pageCounter);
+                    var totalResults = result.certificateCount;
+                    var totalPages = (totalResults + pageSize-1)/pageSize;
 
-                        if (currentResponseItem != null)
+                    Logger.Trace($"Product Model {productModel} Total Results {totalResults}, Total Pages {totalPages}");
+
+                    if (result.certificateCount > 0)
+                    {
+                        for (var i = 0; i < totalPages; i++)
                         {
-                            var certStatus = _requestManager.MapReturnStatus(currentResponseItem.status);
-
-                            //Keyfactor sync only seems to work when there is a valid cert and I can only get Active valid certs from SSLStore
-                            if (certStatus == Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.ISSUED) || certStatus ==
-                                Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED))
+                            //If you need multiple pages make the request again
+                            if (pageCounter > 0)
                             {
-
-                                blockingBuffer.Add(new CAConnectorCertificate
-                                {
-                                    CARequestID =
-                                        $"{currentResponseItem?.serialNumber}",
-                                    Certificate = Encoding.UTF8.GetString(currentResponseItem?.certificate ?? Array.Empty<byte>()),
-                                    SubmissionDate = Convert.ToDateTime(currentResponseItem?.validFrom),
-                                    Status = certStatus,
-                                    ProductID = $"{currentResponseItem?.profileOID}"
-                                }, cancelToken);
+                                result = DigiCertSymClient.SubmitQueryOrderRequest(_requestManager, productModel,
+                                    pageCounter);
                             }
+
+                            XmlSerializer x = new XmlSerializer(result.GetType());
+                            TextWriter tw = new StringWriter();
+                            x.Serialize(tw, result);
+                            Logger.Trace($"Raw Search Cert Soap Response {tw}");
+
+                            foreach (var currentResponseItem in result.certificateList)
+                            {
+                                try
+                                {
+                                    Logger.Trace($"Took Certificate ID {currentResponseItem?.serialNumber} from Queue");
+
+                                    if (currentResponseItem != null)
+                                    {
+                                        var certStatus = _requestManager.MapReturnStatus(currentResponseItem.status);
+                                        Logger.Trace($"Certificate Status {certStatus}");
+                                        
+                                        DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+
+                                        //Keyfactor sync only seems to work when there is a valid cert and I can only get Active valid certs from SSLStore
+                                        if (certStatus ==
+                                            Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.ISSUED) ||
+                                            certStatus ==
+                                            Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED))
+                                        {
+                                            
+                                            blockingBuffer.Add(new CAConnectorCertificate
+                                            {
+                                                CARequestID =
+                                                    $"{currentResponseItem.serialNumber}",
+                                                Certificate = Encoding.UTF8.GetString(currentResponseItem.certificate ??
+                                                    Array.Empty<byte>()),
+                                                SubmissionDate = dateTime.AddSeconds(currentResponseItem.validFrom)
+                                                    .ToLocalTime(),
+                                                Status = certStatus,
+                                                ProductID = $"{currentResponseItem.profileOID}"
+                                            }, cancelToken);
+                                        }
+                                    }
+                                }
+                                catch (OperationCanceledException e)
+                                {
+                                    Logger.Error($"Synchronize was canceled. {e.Message}");
+                                    break;
+                                }
+                            }
+                            pageCounter += pageSize;
                         }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Logger.Error("Synchronize was canceled.");
-                        break;
                     }
                 }
             }
             catch (AggregateException aggEx)
             {
-                Logger.Error("SslStore Synchronize Task failed!");
+                Logger.Error("Digicert mPKI Synchronize Task failed!");
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
                 // ReSharper disable once PossibleIntendedRethrow
                 throw aggEx;
@@ -196,7 +223,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                                     StatusMessage =
                                         $"Enrollment Failed {_requestManager.FlattenErrors(renewResponse?.RegistrationError.Errors)}"
                                 };
-                            
+
                             Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
                             return _requestManager.GetRenewResponse(renewResponse);
                         }
@@ -259,13 +286,14 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 var config = (CAConfig)configProvider;
                 _requestManager = new RequestManager
                 {
-                    
+
                     DnsConstantName = configProvider.CAConnectionData["DnsConstantName"].ToString(),
                     UpnConstantName = configProvider.CAConnectionData["UpnConstantName"].ToString(),
                     IpConstantName = configProvider.CAConnectionData["IpConstantName"].ToString(),
                     EmailConstantName = configProvider.CAConnectionData["EmailConstantName"].ToString()
                 };
                 DigiCertSymClient = new DigiCertSymClient(config);
+                Templates = config.Config.Templates;
                 Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
             }
             catch (Exception e)
