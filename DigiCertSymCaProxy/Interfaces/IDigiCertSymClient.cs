@@ -1,7 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using CAProxy.AnyGateway.Models.Configuration;
 using Keyfactor.AnyGateway.DigiCertSym.Client.Models;
+using Keyfactor.AnyGateway.DigiCertSym.DigicertMPKISOAP;
 
 namespace Keyfactor.AnyGateway.DigiCertSym.Interfaces
 {
@@ -17,7 +19,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym.Interfaces
 
         Task<GetCertificateResponse> SubmitGetCertificateAsync(string serialNumber);
 
-        Task SubmitQueryOrderRequestAsync(BlockingCollection<ICertificateDetails> bc, CancellationToken ct,
-            RequestManager requestManager);
+        SearchCertificateResponseType SubmitQueryOrderRequest(
+            RequestManager requestManager, ProductModel template, int pageCounter);
     }
 }

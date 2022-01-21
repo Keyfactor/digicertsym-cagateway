@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://schemas.verisign.com/pkiservices/2009/07/management" name="certificateManagementService" targetNamespace="http://schemas.verisign.com/pkiservices/2009/07/management" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import schemaLocation="https://pki-ws.symauth.com:443/pki-ws/certificateManagementService?xsd=1" namespace="http://schemas.verisign.com/pkiservices/2009/07/management" />
+    </xsd:schema>
+  </types>
+  <message name="bulkUpdateCertificateStatus">
+    <part name="request" element="tns:bulkUpdateCertificateStatusRequest" />
+  </message>
+  <message name="bulkUpdateCertificateStatusResponse">
+    <part name="response" element="tns:bulkUpdateCertificateStatusResponse" />
+  </message>
+  <message name="updateCertificateStatus">
+    <part name="request" element="tns:updateCertificateStatusRequest" />
+  </message>
+  <message name="updateCertificateStatusResponse">
+    <part name="response" element="tns:updateCertificateStatusResponse" />
+  </message>
+  <message name="searchCertificate">
+    <part name="request" element="tns:searchCertificateRequest" />
+  </message>
+  <message name="searchCertificateResponse">
+    <part name="response" element="tns:searchCertificateResponse" />
+  </message>
+  <message name="keyRecovery">
+    <part name="request" element="tns:requestKeyRecoveryMessage" />
+  </message>
+  <message name="keyRecoveryResponse">
+    <part name="response" element="tns:requestKeyRecoveryResponseMessage" />
+  </message>
+  <message name="printMyBean" />
+  <message name="printMyBeanResponse" />
+  <portType name="CertificateManagementOperations">
+    <operation name="bulkUpdateCertificateStatus">
+      <input message="tns:bulkUpdateCertificateStatus" />
+      <output message="tns:bulkUpdateCertificateStatusResponse" />
+    </operation>
+    <operation name="updateCertificateStatus">
+      <input message="tns:updateCertificateStatus" />
+      <output message="tns:updateCertificateStatusResponse" />
+    </operation>
+    <operation name="searchCertificate">
+      <input message="tns:searchCertificate" />
+      <output message="tns:searchCertificateResponse" />
+    </operation>
+    <operation name="keyRecovery">
+      <input message="tns:keyRecovery" />
+      <output message="tns:keyRecoveryResponse" />
+    </operation>
+    <operation name="printMyBean">
+      <input message="tns:printMyBean" />
+      <output message="tns:printMyBeanResponse" />
+    </operation>
+  </portType>
+  <binding name="certificateManagementServiceSOAPBinding" type="tns:CertificateManagementOperations">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <operation name="bulkUpdateCertificateStatus">
+      <soap:operation soapAction="http://schemas.verisign.com/pkiservices/2009/07/management/bulkUpdateCertificateStatus" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+    <operation name="updateCertificateStatus">
+      <soap:operation soapAction="http://schemas.verisign.com/pkiservices/2009/07/management/updateCertificateStatus" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+    <operation name="searchCertificate">
+      <soap:operation soapAction="http://schemas.verisign.com/pkiservices/2009/07/management/searchCertificate" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+    <operation name="keyRecovery">
+      <soap:operation soapAction="http://schemas.verisign.com/pkiservices/2009/07/management/keyRecovery" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+    <operation name="printMyBean">
+      <soap:operation soapAction="" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+  </binding>
+  <service name="certificateManagementService">
+    <port name="certificateManagementServiceSOAP" binding="tns:certificateManagementServiceSOAPBinding">
+      <soap:address location="https://pki-ws.symauth.com:443/pki-ws/certificateManagementService" />
+    </port>
+  </service>
+</definitions>

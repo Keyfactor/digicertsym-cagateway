@@ -25,11 +25,14 @@
 		"KeyfactorApiUserId": "Keyfactor\\Administrator",
 		"KeyfactorApiPassword": "Password1",
 		"KeyfactorApiUrl": "https://kftrain.keyfactor.lab/KeyfactorAPI",
-		"SeatList": "Keyfactor Portal,www.boingy.com",
+		"SeatList": "NonExistingKey,Key2,Keyfactor Portal,www.wakko.com",
 		"DnsConstantName": "dnsName",
 		"UpnConstantName": "otherNameUPN",
 		"IpConstantName": "san_ipAddress",
-		"EmailConstantName": "mail_email"
+		"EmailConstantName": "mail_email",
+		"ClientCertificateLocation": "C:\\Program Files\\Keyfactor\\Keyfactor AnyGateway\\KeyfactorMPki.pfx",
+		"ClientCertificatePassword": "SomePassword",
+		"EndpointAddress": "https://pki-ws.symauth.com/pki-ws/certificateManagementService"
 	},
 	"Templates": {
 		"Microsoft Wi-Fi (Test Drive)": {

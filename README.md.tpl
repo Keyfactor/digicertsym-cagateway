@@ -130,7 +130,11 @@ the CA.  Without the imported configuration, the service will fail to start.
 4) **KeyfactorApiPassword** - Password for user in Keyfactor with access to Keyfactor API for REST API Calls to Keyfactor
 5) **KeyfactorApiUrl** - URL for Keyfactor API for REST API Calls to Keyfactor
 6) **SeatList** - Comma Separated list of Seats to inventory for the Gateway inventory process
-7) **ConstantNames** - These were made configurable because the digicert API expects these to be named differently depending on the setup.
+7) **ConstantNames** - These were made configurable because the digicert API expects these to be named differently depending on the setup.  Try the default values first and they can be adjusted if errors occur.
+8) **ClientCertificateLocation** - This is for the SOAP Inventory as explained in the SOAP Inventory Setup section.  This is the location of the pfx to use for the client certificate.
+9) **ClientCertificatePassword** - This is for the SOAP Inventory as explained in the SOAP Inventory Setup section.  This is the password for the PFX file to use for the client certificate.
+8) **EndpointAddress** - This is for the SOAP Inventory as explained in the SOAP Inventory Setup section.  This is endpoint address for the SOAP API.  You will want a differnt value than the test version in production.
+
 ```
 	"CAConnection": {
 		"DigiCertSymUrl": "https://pki-ws-rest.symauth.com/mpki/api/v1",
@@ -138,15 +142,15 @@ the CA.  Without the imported configuration, the service will fail to start.
 		"KeyfactorApiUserId": "Keyfactor\\Administrator",
 		"KeyfactorApiPassword": "Password1",
 		"KeyfactorApiUrl": "https://kftrain.keyfactor.lab/KeyfactorAPI",
-		"SeatList": "Keyfactor Portal,www.boingy.com",
-	        "DnsConstantName":"dnsName",
-	        "UpnConstantName":"otherNameUPN",
-	        "IpConstantName":"san_ipAddress",
-	        "EmailConstantName":"mail_email"
+		"DnsConstantName": "dnsName",
+		"UpnConstantName": "otherNameUPN",
+		"IpConstantName": "san_ipAddress",
+		"EmailConstantName": "mail_email",
+		"ClientCertificateLocation": "C:\\Program Files\\Keyfactor\\Keyfactor AnyGateway\\KeyfactorMPki.pfx",
+		"ClientCertificatePassword": "SomePassword!",
+		"EndpointAddress": "https://pki-ws.symauth.com/pki-ws/certificateManagementService"
 	}
 ```
-
-
 
 - **Template Settings**
 1) **ProductID** - OID for profile generated in Digicert mPKI
@@ -239,6 +243,33 @@ Enrollment Format Specifications Located [here](https://pki-ws-rest.symauth.com/
 ### Template Installation
 
 1) **Command Server** - Install a tempate into Active Directory to match each profile that you want to integrate with in DigiCertSym mPKI
+
+### SOAP Inventory Setup
+
+The Digicert mPKI REST API does not support inventory so the SOAP API is required to inventory all of the certs for the profiles listed in config.json file.
+In order to use the SOAP API, you need a client certificate from the Digicert mPKI Portal.  The steps to obtain a certfificate are outlined in the documentation
+listed [here](https://knowledge.digicert.com/content/dam/digicertknowledgebase/attachments/pki-platform/soap-api-client-package/pki-web-services-developers-guide.pdf).
+
+1) Follow the instructions in section 2.6.1 of the above document.
+2) Export the keystore to a PFX file with a similar command that is listed below:
+```keytool -importkeystore -srckeystore KeyfactorMPki.jks -srcstoretype JKS -destkeystore KeyfactorMPki3.pfx -deststoretype PKCS12```
+3) Import the PFX Certificate to the computer it was generated on.
+4) Export the PFX to a file from that same machine's certificate store and copy it to the same directory where the config.json is located.
+
+Sample Commands for a Test Envrionment are below:
+```
+keytool -genkey -alias pki_ra -keyalg RSA -keysize 2048 -sigalg SHA256withRSA -dname "CN=pki_ra" -keypass SomePassword -keystore KeyfactorMPki3 -storepass SomePassword
+
+keytool -certreq -alias pki_ra -sigalg SHA256withRSA -file pki_raCSR.req -keypass SomePassword -keystore KeyfactorMPki2 -storepass SomePassword
+
+keytool -import -alias pki_ra -file cert.p7b -noprompt -keypass SomePassword -keystore KeyfactorMPki2 -storepass SomePassword
+
+keytool -import -trustcacerts -alias pki_ca -file SYMC_Test_Drive_RA_Intermediate_CA.cer -keystore KeyfactorMPki2 -storepass SomePassword
+
+keytool -import -trustcacerts -alias root -file SYMC_Managed_PKI_Infrastructure_Test_Drive_Root.cer -keystore KeyfactorMPki2 -storepass SomePassword
+
+keytool -importkeystore -srckeystore KeyfactorMPki.jks -srcstoretype JKS -destkeystore KeyfactorMPki2.pfx -deststoretype PKCS12
+```
 
 ### Certificate Authority Installation
 1) **Gateway Server** - Start the Keyfactor Gateway Service

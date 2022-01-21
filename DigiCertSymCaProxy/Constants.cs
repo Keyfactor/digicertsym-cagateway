@@ -8,6 +8,8 @@
         public static string KeyfactorApiUrl = "KeyfactorApiUrl";
         public static string KeyfactorApiUserId = "KeyfactorApiUserId";
         public static string KeyfactorApiPassword = "KeyfactorApiPassword";
-        public static string SeatList = "SeatList";
+        public static string EndpointAddress = "EndpointAddress";
+        public static string ClientCertificateLocation = "ClientCertificateLocation";
+        public static string ClientCertificatePassword = "ClientCertificatePassword";
     }
 }
