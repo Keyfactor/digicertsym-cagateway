@@ -124,8 +124,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                                             {
                                                 CARequestID =
                                                     $"{currentResponseItem.serialNumber}",
-                                                Certificate = Encoding.UTF8.GetString(currentResponseItem.certificate ??
-                                                    Array.Empty<byte>()),
+                                                Certificate = Convert.ToBase64String(currentResponseItem.certificate),
                                                 SubmissionDate = dateTime.AddSeconds(currentResponseItem.validFrom)
                                                     .ToLocalTime(),
                                                 Status = certStatus,
