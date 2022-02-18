@@ -17,7 +17,7 @@ using Org.BouncyCastle.Pkcs;
 
 namespace Keyfactor.AnyGateway.DigiCertSym
 {
-    public class RequestManager :LoggingClientBase
+    public class RequestManager : LoggingClientBase
     {
 
         public enum KeyfactorRevokeReasons : uint
@@ -111,7 +111,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             {
                 Logger.Debug("Entering GetRevokeRequest(uint kfRevokeReason) Method...");
                 Logger.Trace($"kfRevokeReason is {kfRevokeReason}");
-                var req = new RevokeRequest {RevocationReason = MapRevokeReason(kfRevokeReason)};
+                var req = new RevokeRequest { RevocationReason = MapRevokeReason(kfRevokeReason) };
                 Logger.Trace($"Revoke Request JSON {JsonConvert.SerializeObject(req)}");
                 Logger.Debug("Exiting GetRevokeRequest(uint kfRevokeReason) Method...");
                 return req;
@@ -133,13 +133,13 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 Logger.Debug("Exiting MapRevokeReason(uint kfRevokeReason) Method...");
                 switch (kfRevokeReason)
                 {
-                    case (uint) KeyfactorRevokeReasons.KeyCompromised:
+                    case (uint)KeyfactorRevokeReasons.KeyCompromised:
                         return DigiCertRevokeReasons.KeyCompromise;
-                    case (uint) KeyfactorRevokeReasons.CessationOfOperation:
+                    case (uint)KeyfactorRevokeReasons.CessationOfOperation:
                         return DigiCertRevokeReasons.CessationOfOperation;
-                    case (uint) KeyfactorRevokeReasons.AffiliationChanged:
+                    case (uint)KeyfactorRevokeReasons.AffiliationChanged:
                         return DigiCertRevokeReasons.AffiliationChanged;
-                    case (uint) KeyfactorRevokeReasons.Superseded:
+                    case (uint)KeyfactorRevokeReasons.Superseded:
                         return DigiCertRevokeReasons.Superseded;
                 }
 
@@ -179,10 +179,10 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 return new SearchCertificateRequestType
                 {
                     profileOID = templateId,
-                    startIndex= pageCounter,
-                    startIndexSpecified=true,
+                    startIndex = pageCounter,
+                    startIndexSpecified = true,
                     version = "1.0"
-            };
+                };
             }
             catch (Exception e)
             {
@@ -219,7 +219,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 string codeBase = Assembly.GetExecutingAssembly().CodeBase;
                 UriBuilder uri = new UriBuilder(codeBase);
                 string path = Uri.UnescapeDataString(uri.Path);
-                path=Path.GetDirectoryName(path) + "\\";
+                path = Path.GetDirectoryName(path) + "\\";
                 Logger.Trace($"Executing path for the file is: {path}");
 
                 Logger.Trace($"Reading in JSON template to parse file {productInfo.ProductParameters["EnrollmentTemplate"]}");
@@ -239,8 +239,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
                 //2. Loop though list of Parsed CSR Elements and replace in JSON
                 var csrValues = csrParsed?.Subject.ToString().Split(',');
-                
-                bool getCommonNameFromSubject= csrValues != null && csrValues[0].Length > 0;
+
+                bool getCommonNameFromSubject = csrValues != null && csrValues[0].Length > 0;
 
                 //certBot workflow, common name always comes only through SAN and is not in common name
                 if (csrValues != null && getCommonNameFromSubject)
@@ -290,8 +290,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
                     var jsonResultDns = JsonConvert.SerializeObject(enrollmentRequest);
 
-                    if(!getCommonNameFromSubject)
-                        jsonResultDns = ReplaceCsrEntry(new[] {"CN", commonName }, jsonResult);
+                    if (!getCommonNameFromSubject)
+                        jsonResultDns = ReplaceCsrEntry(new[] { "CN", commonName }, jsonResult);
 
                     enrollmentRequest = JsonConvert.DeserializeObject<EnrollmentRequest>(jsonResultDns);
                     sn.DnsName = dnsList;
@@ -322,7 +322,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     }
                     sn.UserPrincipalName = upList;
                 }
-                
+
                 //7. Loop through IP Entries
                 if (san.ContainsKey("ip4") || san.ContainsKey("ip6"))
                 {
@@ -408,7 +408,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
         public EnrollmentResult
             GetEnrollmentResult(
-                IEnrollmentResponse enrollmentResponse)
+                IEnrollmentResponse enrollmentResponse, CAConnectorCertificate cert)
         {
             try
             {
@@ -424,7 +424,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 {
                     Status = (int)PKIConstants.Microsoft.RequestDisposition.ISSUED, //success
                     CARequestID = enrollmentResponse.Result.SerialNumber,
-                    Certificate = enrollmentResponse.Result.Certificate,
+                    Certificate = cert.Certificate,
                     StatusMessage =
                         $"Order Successfully Created With Order Number {enrollmentResponse.Result.SerialNumber}"
                 };
@@ -453,7 +453,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             }
         }
 
-        internal EnrollmentResult GetRenewResponse(EnrollmentResponse renewResponse)
+        internal EnrollmentResult GetRenewResponse(EnrollmentResponse renewResponse, CAConnectorCertificate cert)
         {
             try
             {
@@ -469,7 +469,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 {
                     Status = (int)PKIConstants.Microsoft.RequestDisposition.ISSUED, //success
                     CARequestID = renewResponse.Result.SerialNumber,
-                    Certificate = renewResponse.Result.Certificate,
+                    Certificate = cert.Certificate,
                     StatusMessage =
                         $"Order Successfully Created With Order Number {renewResponse.Result.SerialNumber}"
                 };

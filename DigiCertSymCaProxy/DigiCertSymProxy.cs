@@ -79,7 +79,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     var pageSize = 50;
                     var result = DigiCertSymClient.SubmitQueryOrderRequest(_requestManager, productModel, pageCounter);
                     var totalResults = result.certificateCount;
-                    var totalPages = (totalResults + pageSize-1)/pageSize;
+                    var totalPages = (totalResults + pageSize - 1) / pageSize;
 
                     Logger.Trace($"Product Model {productModel} Total Results {totalResults}, Total Pages {totalPages}");
 
@@ -109,7 +109,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                                     {
                                         var certStatus = _requestManager.MapReturnStatus(currentResponseItem.status);
                                         Logger.Trace($"Certificate Status {certStatus}");
-                                        
+
                                         DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 
                                         //Keyfactor sync only seems to work when there is a valid cert and I can only get Active valid certs from SSLStore
@@ -118,7 +118,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                                             certStatus ==
                                             Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED))
                                         {
-                                            
+
                                             blockingBuffer.Add(new CAConnectorCertificate
                                             {
                                                 CARequestID =
@@ -198,7 +198,9 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                         Logger.Trace($"Enrollment Response JSON: {JsonConvert.SerializeObject(enrollmentResponse)}");
 
                         Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
-                        return _requestManager.GetEnrollmentResult(enrollmentResponse);
+
+                        var cert = GetSingleRecord(enrollmentResponse.Result.SerialNumber);
+                        return _requestManager.GetEnrollmentResult(enrollmentResponse, cert);
                     case RequestUtilities.EnrollmentType.Renew:
                     case RequestUtilities.EnrollmentType.Reissue:
                         Logger.Trace("Entering Renew Enrollment");
@@ -223,7 +225,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                                 };
 
                             Logger.MethodExit(ILogExtensions.MethodLogLevel.Debug);
-                            return _requestManager.GetRenewResponse(renewResponse);
+                            var renCert = GetSingleRecord(renewResponse.Result.SerialNumber);
+                            return _requestManager.GetRenewResponse(renewResponse, renCert);
                         }
                         else
                         {
