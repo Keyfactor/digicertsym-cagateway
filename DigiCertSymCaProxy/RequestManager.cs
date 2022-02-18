@@ -416,14 +416,15 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 if (enrollmentResponse.RegistrationError != null)
                     return new EnrollmentResult
                     {
-                        Status = 30, //failure
+                        Status = (int)PKIConstants.Microsoft.RequestDisposition.FAILED, //failure
                         StatusMessage = "Error occurred when enrolling"
                     };
 
                 return new EnrollmentResult
                 {
-                    Status = 13, //success
+                    Status = (int)PKIConstants.Microsoft.RequestDisposition.ISSUED, //success
                     CARequestID = enrollmentResponse.Result.SerialNumber,
+                    Certificate = enrollmentResponse.Result.Certificate,
                     StatusMessage =
                         $"Order Successfully Created With Order Number {enrollmentResponse.Result.SerialNumber}"
                 };
@@ -460,14 +461,15 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 if (renewResponse.RegistrationError != null)
                     return new EnrollmentResult
                     {
-                        Status = 30, //failure
+                        Status = (int)PKIConstants.Microsoft.RequestDisposition.FAILED, //failure
                         StatusMessage = "Error occurred when enrolling"
                     };
 
                 return new EnrollmentResult
                 {
-                    Status = 13, //success
+                    Status = (int)PKIConstants.Microsoft.RequestDisposition.ISSUED, //success
                     CARequestID = renewResponse.Result.SerialNumber,
+                    Certificate = renewResponse.Result.Certificate,
                     StatusMessage =
                         $"Order Successfully Created With Order Number {renewResponse.Result.SerialNumber}"
                 };

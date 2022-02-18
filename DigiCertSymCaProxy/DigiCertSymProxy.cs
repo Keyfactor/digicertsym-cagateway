@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -190,7 +189,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                         if (enrollmentResponse?.Result == null)
                             return new EnrollmentResult
                             {
-                                Status = 30, //failure
+                                Status = (int)PKIConstants.Microsoft.RequestDisposition.FAILED, //failure
                                 StatusMessage =
                                     $"Enrollment Failed: {_requestManager.FlattenErrors(enrollmentResponse?.RegistrationError.Errors)}"
                             };
@@ -218,7 +217,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                             if (renewResponse?.Result == null)
                                 return new EnrollmentResult
                                 {
-                                    Status = 30, //failure
+                                    Status = (int)PKIConstants.Microsoft.RequestDisposition.FAILED, //failure
                                     StatusMessage =
                                         $"Enrollment Failed {_requestManager.FlattenErrors(renewResponse?.RegistrationError.Errors)}"
                                 };
@@ -230,7 +229,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                         {
                             return new EnrollmentResult
                             {
-                                Status = 30, //failure
+                                Status = (int)PKIConstants.Microsoft.RequestDisposition.FAILED,
                                 StatusMessage =
                                 "One Click Renew is not available for this integration.  Need to specify validity and seat enrollment params."
                             };
