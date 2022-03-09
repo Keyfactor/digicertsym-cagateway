@@ -32,6 +32,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
         public string UpnConstantName { get; set; }
         public string IpConstantName { get; set; }
         public string EmailConstantName { get; set; }
+        public int OuStartPoint { get; set; }
+
 
         public static Func<string, string> Pemify = ss =>
             ss.Length <= 64 ? ss : ss.Substring(0, 64) + "\n" + Pemify(ss.Substring(64));
@@ -379,17 +381,16 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 var organizationUnitsRaw = GetValueFromCsr("OU", csrParsed);
                 Logger.Trace($"Raw Organizational Units: {organizationUnitsRaw}");
                 var organizationalUnits = organizationUnitsRaw.Split('/');
-
                 var orgUnits = new List<OrganizationUnit>();
-                var i = 2;
+                Logger.Trace($"OuStartPoint is {OuStartPoint}");
+                var i = OuStartPoint;
                 foreach (var ou in organizationalUnits)
                 {
-                    var organizationUnit = new OrganizationUnit { Id = "cert_org_unit" + i, Value = ou };
+                    var organizationUnit = new OrganizationUnit { Id = OuStartPoint==0?"cert_org_unit":"cert_org_unit" + i, Value = ou };
                     orgUnits.Add(organizationUnit);
                     i++;
                 }
-
-
+                
                 var attributes = enrollmentRequest.Attributes;
                 attributes.OrganizationUnit = orgUnits;
                 attributes.San = sn;
