@@ -291,7 +291,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     DnsConstantName = configProvider.CAConnectionData["DnsConstantName"].ToString(),
                     UpnConstantName = configProvider.CAConnectionData["UpnConstantName"].ToString(),
                     IpConstantName = configProvider.CAConnectionData["IpConstantName"].ToString(),
-                    EmailConstantName = configProvider.CAConnectionData["EmailConstantName"].ToString()
+                    EmailConstantName = configProvider.CAConnectionData["EmailConstantName"].ToString(),
+                    OuStartPoint = int.Parse(configProvider.CAConnectionData["OuStartPoint"].ToString())
                 };
                 DigiCertSymClient = new DigiCertSymClient(config);
                 Templates = config.Config.Templates;
