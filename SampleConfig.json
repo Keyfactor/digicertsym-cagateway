@@ -32,7 +32,8 @@
 		"EmailConstantName": "mail_email",
 		"ClientCertificateLocation": "C:\\Program Files\\Keyfactor\\Keyfactor AnyGateway\\KeyfactorMPki.pfx",
 		"ClientCertificatePassword": "SomePassword",
-		"EndpointAddress": "https://pki-ws.symauth.com/pki-ws/certificateManagementService"
+		"EndpointAddress": "https://pki-ws.symauth.com/pki-ws/certificateManagementService",
+		"OuStartPoint": 0
 	},
 	"Templates": {
 		"Microsoft Wi-Fi (Test Drive)": {
