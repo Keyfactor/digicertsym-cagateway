@@ -134,6 +134,7 @@ the CA.  Without the imported configuration, the service will fail to start.
 8) **ClientCertificateLocation** - This is for the SOAP Inventory as explained in the SOAP Inventory Setup section.  This is the location of the pfx to use for the client certificate.
 9) **ClientCertificatePassword** - This is for the SOAP Inventory as explained in the SOAP Inventory Setup section.  This is the password for the PFX file to use for the client certificate.
 8) **EndpointAddress** - This is for the SOAP Inventory as explained in the SOAP Inventory Setup section.  This is endpoint address for the SOAP API.  You will want a differnt value than the test version in production.
+9) **OuStartPoint** - This was made configurable for clients that have more than one Organizational Units.  If there are 2 existing, this should be set to 2.
 
 ```
 	"CAConnection": {
@@ -148,7 +149,8 @@ the CA.  Without the imported configuration, the service will fail to start.
 		"EmailConstantName": "mail_email",
 		"ClientCertificateLocation": "C:\\Program Files\\Keyfactor\\Keyfactor AnyGateway\\KeyfactorMPki.pfx",
 		"ClientCertificatePassword": "SomePassword!",
-		"EndpointAddress": "https://pki-ws.symauth.com/pki-ws/certificateManagementService"
+		"EndpointAddress": "https://pki-ws.symauth.com/pki-ws/certificateManagementService",
+		"OuStartPoint":2
 	}
 ```
 
