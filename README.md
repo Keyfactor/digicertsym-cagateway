@@ -2,7 +2,7 @@
 
 This gateway integration supports the Digicert MPKI platform. It handles Enrollment, Renewal, Revoke and inventory by multiple seat Ids.
 
-#### Integration status: Production - Ready for use in production environments.
+#### Integration status: Pilot - Ready for use in test environments. Not for use in production.
 
 ## About the Keyfactor AnyGateway CA Connector
 
