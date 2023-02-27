@@ -86,10 +86,13 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                     case CertificateStatusEnum.VALID:
                         returnStatus = PKIConstants.Microsoft.RequestDisposition.ISSUED;
                         break;
+                    case CertificateStatusEnum.EXPIRED:
+                        returnStatus = PKIConstants.Microsoft.RequestDisposition.ISSUED;
+                        break;
                     case CertificateStatusEnum.SUSPENDED:
                         returnStatus = PKIConstants.Microsoft.RequestDisposition.REVOKED;
                         break;
-                    case CertificateStatusEnum.EXPIRED:
+                    case CertificateStatusEnum.REVOKED:
                         returnStatus = PKIConstants.Microsoft.RequestDisposition.REVOKED;
                         break;
                     default:
@@ -126,7 +129,7 @@ namespace Keyfactor.AnyGateway.DigiCertSym
         }
 
 
-        private string MapRevokeReason(uint kfRevokeReason)
+        public string MapRevokeReason(uint kfRevokeReason)
         {
             try
             {
@@ -146,6 +149,33 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 }
 
                 return "";
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Exception Occurred in MapRevokeReason(uint kfRevokeReason): {e.Message}");
+                throw;
+            }
+        }
+
+        internal int MapSoapRevokeReason(RevokeReasonCodeEnum revokeReason)
+        {
+            try
+            {
+                Logger.Debug("Entering MapRevokeReason(uint kfRevokeReason) Method...");
+                Logger.Trace($"dcRevokeReason is {revokeReason}");
+                Logger.Debug("Exiting MapRevokeReason(uint kfRevokeReason) Method...");
+                switch (revokeReason)
+                {
+                    case RevokeReasonCodeEnum.KeyCompromise:
+                        return (int)KeyfactorRevokeReasons.KeyCompromised;
+                    case RevokeReasonCodeEnum.CessationOfOperation:
+                        return (int)KeyfactorRevokeReasons.CessationOfOperation;
+                    case RevokeReasonCodeEnum.AffiliationChanged:
+                        return (int)KeyfactorRevokeReasons.AffiliationChanged;
+                    case RevokeReasonCodeEnum.Superseded:
+                        return (int)KeyfactorRevokeReasons.Superseded;
+                }
+                return 0;
             }
             catch (Exception e)
             {
