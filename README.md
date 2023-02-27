@@ -2,18 +2,15 @@
 
 This gateway integration supports the Digicert MPKI platform. It handles Enrollment, Renewal, Revoke and inventory by multiple seat Ids.
 
-#### Integration status: Production - Ready for use in production environments.
+#### Integration status: Pilot - Ready for use in test environments. Not for use in production.
 
 ## About the Keyfactor AnyGateway CA Connector
 
 This repository contains an AnyGateway CA Connector, which is a plugin to the Keyfactor AnyGateway. AnyGateway CA Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
 
----
 
 
 
-
----
 
 # Getting Started
 ## Standard Gateway Installation

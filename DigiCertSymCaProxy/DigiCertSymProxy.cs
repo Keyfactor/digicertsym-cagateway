@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -33,6 +34,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             try
             {
                 Logger.Trace("Staring Revoke Method");
+                //Digicert can't find serial numbers with leading zeros
+                hexSerialNumber = hexSerialNumber.TrimStart(new char[] { '0' });
                 var revokeRequest = _requestManager.GetRevokeRequest(revocationReason);
 
                 var revokeResponse =
@@ -111,24 +114,25 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                                         Logger.Trace($"Certificate Status {certStatus}");
 
                                         DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-
-                                        //Keyfactor sync only seems to work when there is a valid cert and I can only get Active valid certs from SSLStore
-                                        if (certStatus ==
-                                            Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.ISSUED) ||
-                                            certStatus ==
-                                            Convert.ToInt32(PKIConstants.Microsoft.RequestDisposition.REVOKED))
+                                        var base64Cert = Convert.ToBase64String(currentResponseItem.certificate);
+                                        try
                                         {
-
+                                            var currentCert = new System.Security.Cryptography.X509Certificates.X509Certificate2(Encoding.ASCII.GetBytes(base64Cert));
                                             blockingBuffer.Add(new CAConnectorCertificate
                                             {
                                                 CARequestID =
-                                                    $"{currentResponseItem.serialNumber}",
-                                                Certificate = Convert.ToBase64String(currentResponseItem.certificate),
+                                                        $"{currentResponseItem.serialNumber}",
+                                                Certificate = base64Cert,
                                                 SubmissionDate = dateTime.AddSeconds(currentResponseItem.validFrom)
-                                                    .ToLocalTime(),
+                                                        .ToLocalTime(),
                                                 Status = certStatus,
-                                                ProductID = $"{currentResponseItem.profileOID}"
+                                                ProductID = $"{currentResponseItem.profileOID}",
+                                                RevocationReason=_requestManager.MapSoapRevokeReason(currentResponseItem.revokeReason)                                               
                                             }, cancelToken);
+                                        }
+                                        catch(Exception e)
+                                        {
+                                            Logger.Warn($"Invalid Certificate, skipping this one {LogHandler.FlattenException(e)}");
                                         }
                                     }
                                 }
