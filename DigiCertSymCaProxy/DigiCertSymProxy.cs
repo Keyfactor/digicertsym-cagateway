@@ -74,75 +74,89 @@ namespace Keyfactor.AnyGateway.DigiCertSym
         {
             try
             {
-                //Loop through all the Digicert Profile OIDs that are setup in the config file
-                foreach (var productModel in Templates.Values)
+                //Only Full Sync is Supported so check for it.
+                if (certificateAuthoritySyncInfo.DoFullSync)
                 {
-
-                    var pageCounter = 0;
-                    var pageSize = 50;
-                    var result = DigiCertSymClient.SubmitQueryOrderRequest(_requestManager, productModel, pageCounter);
-                    var totalResults = result.certificateCount;
-                    var totalPages = (totalResults + pageSize - 1) / pageSize;
-
-                    Logger.Trace($"Product Model {productModel} Total Results {totalResults}, Total Pages {totalPages}");
-
-                    if (result.certificateCount > 0)
+                    //Loop through all the Digicert Profile OIDs that are setup in the config file
+                    foreach (var productModel in Templates.Values)
                     {
-                        for (var i = 0; i < totalPages; i++)
+
+                        var pageCounter = 0;
+                        var pageSize = 50;
+                        var result =
+                            DigiCertSymClient.SubmitQueryOrderRequest(_requestManager, productModel, pageCounter);
+                        var totalResults = result.certificateCount;
+                        var totalPages = (totalResults + pageSize - 1) / pageSize;
+
+                        Logger.Trace(
+                            $"Product Model {productModel} Total Results {totalResults}, Total Pages {totalPages}");
+
+                        if (result.certificateCount > 0)
                         {
-                            //If you need multiple pages make the request again
-                            if (pageCounter > 0)
+                            for (var i = 0; i < totalPages; i++)
                             {
-                                result = DigiCertSymClient.SubmitQueryOrderRequest(_requestManager, productModel,
-                                    pageCounter);
-                            }
-
-                            XmlSerializer x = new XmlSerializer(result.GetType());
-                            TextWriter tw = new StringWriter();
-                            x.Serialize(tw, result);
-                            Logger.Trace($"Raw Search Cert Soap Response {tw}");
-
-                            foreach (var currentResponseItem in result.certificateList)
-                            {
-                                try
+                                //If you need multiple pages make the request again
+                                if (pageCounter > 0)
                                 {
-                                    Logger.Trace($"Took Certificate ID {currentResponseItem?.serialNumber} from Queue");
+                                    result = DigiCertSymClient.SubmitQueryOrderRequest(_requestManager, productModel,
+                                        pageCounter);
+                                }
 
-                                    if (currentResponseItem != null)
+                                XmlSerializer x = new XmlSerializer(result.GetType());
+                                TextWriter tw = new StringWriter();
+                                x.Serialize(tw, result);
+                                Logger.Trace($"Raw Search Cert Soap Response {tw}");
+
+                                foreach (var currentResponseItem in result.certificateList)
+                                {
+                                    try
                                     {
-                                        var certStatus = _requestManager.MapReturnStatus(currentResponseItem.status);
-                                        Logger.Trace($"Certificate Status {certStatus}");
+                                        Logger.Trace(
+                                            $"Took Certificate ID {currentResponseItem?.serialNumber} from Queue");
 
-                                        DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-                                        var base64Cert = Convert.ToBase64String(currentResponseItem.certificate);
-                                        try
+                                        if (currentResponseItem != null)
                                         {
-                                            var currentCert = new System.Security.Cryptography.X509Certificates.X509Certificate2(Encoding.ASCII.GetBytes(base64Cert));
-                                            blockingBuffer.Add(new CAConnectorCertificate
+                                            var certStatus =
+                                                _requestManager.MapReturnStatus(currentResponseItem.status);
+                                            Logger.Trace($"Certificate Status {certStatus}");
+
+                                            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+                                            var base64Cert = Convert.ToBase64String(currentResponseItem.certificate);
+                                            try
                                             {
-                                                CARequestID =
+                                                var currentCert =
+                                                    new System.Security.Cryptography.X509Certificates.X509Certificate2(
+                                                        Encoding.ASCII.GetBytes(base64Cert));
+                                                blockingBuffer.Add(new CAConnectorCertificate
+                                                {
+                                                    CARequestID =
                                                         $"{currentResponseItem.serialNumber}",
-                                                Certificate = base64Cert,
-                                                SubmissionDate = dateTime.AddSeconds(currentResponseItem.validFrom)
+                                                    Certificate = base64Cert,
+                                                    SubmissionDate = dateTime.AddSeconds(currentResponseItem.validFrom)
                                                         .ToLocalTime(),
-                                                Status = certStatus,
-                                                ProductID = $"{currentResponseItem.profileOID}",
-                                                RevocationReason=_requestManager.MapSoapRevokeReason(currentResponseItem.revokeReason)                                               
-                                            }, cancelToken);
-                                        }
-                                        catch(Exception e)
-                                        {
-                                            Logger.Warn($"Invalid Certificate, skipping this one {LogHandler.FlattenException(e)}");
+                                                    Status = certStatus,
+                                                    ProductID = $"{currentResponseItem.profileOID}",
+                                                    RevocationReason =
+                                                        _requestManager.MapSoapRevokeReason(currentResponseItem
+                                                            .revokeReason)
+                                                }, cancelToken);
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                Logger.Warn(
+                                                    $"Invalid Certificate, skipping this one {LogHandler.FlattenException(e)}");
+                                            }
                                         }
                                     }
+                                    catch (OperationCanceledException e)
+                                    {
+                                        Logger.Error($"Synchronize was canceled. {e.Message}");
+                                        break;
+                                    }
                                 }
-                                catch (OperationCanceledException e)
-                                {
-                                    Logger.Error($"Synchronize was canceled. {e.Message}");
-                                    break;
-                                }
+
+                                pageCounter += pageSize;
                             }
-                            pageCounter += pageSize;
                         }
                     }
                 }
