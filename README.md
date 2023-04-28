@@ -2,7 +2,7 @@
 
 This gateway integration supports the Digicert MPKI platform. It handles Enrollment, Renewal, Revoke and inventory by multiple seat Ids.
 
-#### Integration status: Pilot - Ready for use in test environments. Not for use in production.
+#### Integration status: Production - Ready for use in production environments.
 
 ## About the Keyfactor AnyGateway CA Connector
 
@@ -17,6 +17,10 @@ This repository contains an AnyGateway CA Connector, which is a plugin to the Ke
 
 
 
+
+## Keyfactor AnyGateway Framework Supported
+
+This gateway was compiled against version 22.1.1 of the AnyGateway Framework.  You will need at least this version of the AnyGateway Framework Installed.  If you have a later AnyGateway Framework Installed you will probably need to add binding redirects in the CAProxyServer.exe.config file to make things work properly.
 
 
 
