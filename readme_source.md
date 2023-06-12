@@ -19,8 +19,6 @@ To install the gateway follow these instructions.
    %InstallLocation%\DatabaseManagementConsole.exe create -s [database server name] -d [database name] -u [sql user] -p [sql password]
    ```
 
-   If you do **not** have rights to created the database then have the database created ahead of time by the support team and just populate the database
-
    ## Populate commands below
 
    **Windows Authentication**
