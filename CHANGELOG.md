@@ -1,2 +1,2 @@
 1.0.9
-* Initial Version
+* Initial Public Release Version
