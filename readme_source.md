@@ -19,8 +19,6 @@ To install the gateway follow these instructions.
    %InstallLocation%\DatabaseManagementConsole.exe create -s [database server name] -d [database name] -u [sql user] -p [sql password]
    ```
 
-   If you do **not** have rights to created the database then have the database created ahead of time by the support team and just populate the database
-
    ## Populate commands below
 
    **Windows Authentication**
@@ -77,7 +75,7 @@ the CA.  Without the imported configuration, the service will fail to start.
 ### Binary Installation
 
 1) Get the Latest Zip File from [Here](https://github.com/Keyfactor/digicertsym-cagateway/releases)
-2) **Gateway Server** - Copy the DigiCertSymProxy.dll to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
+2) **Gateway Server** - Copy the DigiCertSymProxy.dll and DigiCertSymProxy.dll.config to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
 
 ### Configuration Changes
 1) **Gateway Server** - Edit the CAProxyServer.exe.config file and replace the line that says "NoOp" with the line below:

@@ -2,7 +2,8 @@
 
 This gateway integration supports the Digicert MPKI platform. It handles Enrollment, Renewal, Revoke and inventory by multiple seat Ids.
 
-#### Integration status: Pilot - Ready for use in test environments. Not for use in production.
+#### Integration status: Production - Ready for use in production environments.
+
 
 ## About the Keyfactor AnyGateway CA Connector
 
@@ -10,6 +11,22 @@ This repository contains an AnyGateway CA Connector, which is a plugin to the Ke
 
 
 
+
+
+---
+
+
+
+
+
+
+## Keyfactor AnyGateway Framework Supported
+
+This gateway was compiled against version 22.1.1 of the AnyGateway Framework.  You will need at least this version of the AnyGateway Framework Installed.  If you have a later AnyGateway Framework Installed you will probably need to add binding redirects in the CAProxyServer.exe.config file to make things work properly.
+
+
+
+---
 
 
 # Getting Started
@@ -32,8 +49,6 @@ To install the gateway follow these instructions.
    ```
    %InstallLocation%\DatabaseManagementConsole.exe create -s [database server name] -d [database name] -u [sql user] -p [sql password]
    ```
-
-   If you do **not** have rights to created the database then have the database created ahead of time by the support team and just populate the database
 
    ## Populate commands below
 
@@ -91,7 +106,7 @@ the CA.  Without the imported configuration, the service will fail to start.
 ### Binary Installation
 
 1) Get the Latest Zip File from [Here](https://github.com/Keyfactor/digicertsym-cagateway/releases)
-2) **Gateway Server** - Copy the DigiCertSymProxy.dll to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
+2) **Gateway Server** - Copy the DigiCertSymProxy.dll and DigiCertSymProxy.dll.config to the location where the Gateway Framework was installed (usually C:\Program Files\Keyfactor\Keyfactor AnyGateway)
 
 ### Configuration Changes
 1) **Gateway Server** - Edit the CAProxyServer.exe.config file and replace the line that says "NoOp" with the line below:
