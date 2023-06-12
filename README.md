@@ -4,9 +4,11 @@ This gateway integration supports the Digicert MPKI platform. It handles Enrollm
 
 #### Integration status: Production - Ready for use in production environments.
 
+
 ## About the Keyfactor AnyGateway CA Connector
 
 This repository contains an AnyGateway CA Connector, which is a plugin to the Keyfactor AnyGateway. AnyGateway CA Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
+
 
 
 
@@ -47,8 +49,6 @@ To install the gateway follow these instructions.
    ```
    %InstallLocation%\DatabaseManagementConsole.exe create -s [database server name] -d [database name] -u [sql user] -p [sql password]
    ```
-
-   If you do **not** have rights to created the database then have the database created ahead of time by the support team and just populate the database
 
    ## Populate commands below
 
