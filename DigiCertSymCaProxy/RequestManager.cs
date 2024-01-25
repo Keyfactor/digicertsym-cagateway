@@ -479,8 +479,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 return new EnrollmentResult
                 {
                     Status = (int)PKIConstants.Microsoft.RequestDisposition.ISSUED, //success
-                    CARequestID = enrollmentResponse.Result.SerialNumber,
-                    Certificate = cert.Certificate,
+                    CARequestID = enrollmentResponse?.Result?.SerialNumber,
+                    Certificate = cert?.Certificate,
                     StatusMessage =
                         $"Order Successfully Created With Order Number {enrollmentResponse.Result.SerialNumber}"
                 };
