@@ -419,10 +419,10 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 }
 
                 //8. Loop through mail Entries
-                if (san.ContainsKey("mail"))
+                if (san.ContainsKey("email"))
                 {
                     var mailList = new List<Rfc822Name>();
-                    var mailKp = san["mail"];
+                    var mailKp = san["email"];
 
                     Logger.Trace($"mail: {mailKp}");
 
