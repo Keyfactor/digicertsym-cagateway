@@ -283,6 +283,9 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             try
             {
                 Logger.MethodEntry(ILogExtensions.MethodLogLevel.Debug);
+                if (string.IsNullOrEmpty(caRequestId))
+                    return null;
+                
                 var keyfactorCaId = caRequestId;
                 Logger.Trace($"Keyfactor Ca Id: {keyfactorCaId}");
                 var certificateResponse =
