@@ -7,7 +7,7 @@
 // OR CONDITIONS OF ANY KIND, either express or implied. See the License for  
 // thespecific language governing permissions and limitations under the       
 // License. 
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -23,6 +23,7 @@ using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Pkcs;
+using System.Linq;
 
 namespace Keyfactor.AnyGateway.DigiCertSym
 {
@@ -232,6 +233,49 @@ namespace Keyfactor.AnyGateway.DigiCertSym
             }
         }
 
+        private (Dictionary<string, string> DNSOut, Dictionary<string, string> MultiOut) ProcessSansArray(
+             string[] sanArray, string commonName)
+        {
+            Dictionary<string, string> dnsOut = new Dictionary<string, string>();
+            Dictionary<string, string> multiOut = new Dictionary<string, string>();
+
+            if (sanArray.Length == 1)
+            {
+                var singleItem = sanArray.First();
+                if (singleItem == commonName || string.IsNullOrWhiteSpace(commonName))
+                {
+                    dnsOut.Add(singleItem, singleItem);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Error: Single item does not match CommonName.");
+                }
+            }
+            else if (sanArray.Length > 1)
+            {
+                if (!string.IsNullOrWhiteSpace(commonName))
+                {
+                    if (!sanArray.Contains(commonName))
+                    {
+                        throw new InvalidOperationException("Error: Multiple items, none of them match CommonName.");
+                    }
+                    else
+                    {
+                        dnsOut.Add(commonName, commonName);
+                        multiOut = sanArray.Where(item => item != commonName)
+                            .ToDictionary(item => item, item => item);
+                    }
+                }
+                else
+                {
+                    dnsOut.Add(sanArray.First(), sanArray.First());
+                    multiOut = sanArray.Skip(1).ToDictionary(item => item, item => item);
+                }
+            }
+
+            return (dnsOut, multiOut);
+        }
+
         public EnrollmentRequest GetEnrollmentRequest(EnrollmentProductInfo productInfo, string csr,
             Dictionary<string, string[]> san)
         {
@@ -303,38 +347,46 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
                 Logger.Trace($"Enrollment Serialized JSON before DNS and OU, result: {JsonConvert.SerializeObject(enrollmentRequest)}");
 
-                //5. Loop through DNS Entries, if coming from Cert bot, then need to get common name from here as well
+                Dictionary<string, string> MultiOut=null;
+
+                List<DnsName> dnsList = new List<DnsName>();
+
+                //5. If it contains the dns and it is not multi domain get the DNS
                 if (san.ContainsKey("dns"))
                 {
-                    var dnsList = new List<DnsName>();
                     var dnsKp = san["dns"];
                     Logger.Trace($"dnsKP: {dnsKp}");
-                    var commonNameList = new List<string>();
 
-                    var j = 1;
-                    foreach (var item in dnsKp)
+                    (Dictionary<string, string> DNSOut, Dictionary<string, string> MultiOut) result;
+
+                    if (!getCommonNameFromSubject)
                     {
-                        commonNameList.Add(item);
-                        if (j < 2)
-                        {
-                            DnsName dns = new DnsName { Id = DnsConstantName, Value = item };
-                            dnsList.Add(dns);
-                        }
-                        else
-                        {
-                            DnsName dns = new DnsName { Id = DnsConstantName + j, Value = item };
-                            dnsList.Add(dns);
-                        }
-                        j++;
+                        //Cert Bot flow, Cert Bot has no common name and the dns comes from the SAN blank for common name returns first DNS
+                        result = ProcessSansArray(dnsKp, "");
                     }
-                    string commonName = string.Join(",", commonNameList);
+                    else
+                    {
+                        result = ProcessSansArray(dnsKp, enrollmentRequest?.Attributes?.CommonName);
+                    }
 
+                    DnsName up = new DnsName { Id = DnsConstantName, Value = result.DNSOut.FirstOrDefault().Value };
+
+                    MultiOut = result.MultiOut;
                     var jsonResultDns = JsonConvert.SerializeObject(enrollmentRequest);
 
                     if (!getCommonNameFromSubject)
-                        jsonResultDns = ReplaceCsrEntry(new[] { "CN", commonName }, jsonResult);
+                        jsonResultDns = ReplaceCsrEntry(new[] { "CN", result.DNSOut.FirstOrDefault().Value }, jsonResult);
 
                     enrollmentRequest = JsonConvert.DeserializeObject<EnrollmentRequest>(jsonResultDns);
+                    dnsList.Add(up);
+
+                    //5. Handle the multiple domain scenario domains go in a different attribute
+                    if (MultiOut?.Count > 0)
+                    {
+                        DnsName mdns = new DnsName { Id = "custom_encode_dnsName_multi", Value = string.Join(",", MultiOut.Values) };
+                        dnsList.Add(mdns);
+                    }
+
                     sn.DnsName = dnsList;
                 }
 
@@ -346,73 +398,37 @@ namespace Keyfactor.AnyGateway.DigiCertSym
 
                     Logger.Trace($"upn: {upKp}");
 
-                    var k = 1;
-                    foreach (var item in upKp)
-                    {
-                        if (k < 2)
-                        {
-                            UserPrincipalName up = new UserPrincipalName { Id = UpnConstantName, Value = item };
-                            upList.Add(up);
-                        }
-                        else
-                        {
-                            UserPrincipalName up = new UserPrincipalName { Id = UpnConstantName + k, Value = item };
-                            upList.Add(up);
-                        }
-                        k++;
-                    }
+                    //Multiple UPNs not supported by Digicert so take the first one in the list
+                    UserPrincipalName up = new UserPrincipalName { Id = UpnConstantName, Value = upKp.FirstOrDefault() };
+                    upList.Add(up);
                     sn.UserPrincipalName = upList;
                 }
 
                 //7. Loop through IP Entries
-                if (san.ContainsKey("ip4") || san.ContainsKey("ip6"))
+                if (san.ContainsKey("ipaddress"))
                 {
                     var ipList = new List<IpAddress>();
 
-                    var ipKp = san.ContainsKey("ip4") ? san["ip4"] : san["ip6"];
+                    var ipKp = san["ipaddress"];
                     Logger.Trace($"ip: {ipKp}");
 
-                    var k = 1;
-                    foreach (var item in ipKp)
-                    {
-                        if (k < 2)
-                        {
-                            IpAddress ip = new IpAddress { Id = IpConstantName, Value = item };
-                            ipList.Add(ip);
-                        }
-                        else
-                        {
-                            IpAddress ip = new IpAddress { Id = IpConstantName + k, Value = item };
-                            ipList.Add(ip);
-                        }
-                        k++;
-                    }
+                    //Multiple IP Addresses not supported by Digicert so take the first one in the list
+                    IpAddress ip = new IpAddress { Id = IpConstantName, Value = ipKp.FirstOrDefault() };
+                    ipList.Add(ip);
                     sn.IpAddress = ipList;
                 }
 
                 //8. Loop through mail Entries
-                if (san.ContainsKey("mail"))
+                if (san.ContainsKey("email"))
                 {
                     var mailList = new List<Rfc822Name>();
-                    var mailKp = san["mail"];
+                    var mailKp = san["email"];
 
                     Logger.Trace($"mail: {mailKp}");
 
-                    var k = 1;
-                    foreach (var item in mailKp)
-                    {
-                        if (k < 2)
-                        {
-                            Rfc822Name mail = new Rfc822Name { Id = EmailConstantName, Value = item };
-                            mailList.Add(mail);
-                        }
-                        else
-                        {
-                            Rfc822Name mail = new Rfc822Name { Id = EmailConstantName + k, Value = item };
-                            mailList.Add(mail);
-                        }
-                        k++;
-                    }
+                    //Multiple IP Addresses not supported by Digicert so take the first one in the list
+                    Rfc822Name mail = new Rfc822Name { Id = EmailConstantName, Value = mailKp.FirstOrDefault() };
+                    mailList.Add(mail);
                     sn.Rfc822Name = mailList;
                 }
 
@@ -425,11 +441,11 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 var i = OuStartPoint;
                 foreach (var ou in organizationalUnits)
                 {
-                    var organizationUnit = new OrganizationUnit { Id = OuStartPoint==0?"cert_org_unit":"cert_org_unit" + i, Value = ou };
+                    var organizationUnit = new OrganizationUnit { Id = OuStartPoint == 0 ? "cert_org_unit" : "cert_org_unit" + i, Value = ou };
                     orgUnits.Add(organizationUnit);
                     i++;
                 }
-                
+
                 var attributes = enrollmentRequest.Attributes;
                 attributes.OrganizationUnit = orgUnits;
                 attributes.San = sn;
@@ -463,8 +479,8 @@ namespace Keyfactor.AnyGateway.DigiCertSym
                 return new EnrollmentResult
                 {
                     Status = (int)PKIConstants.Microsoft.RequestDisposition.ISSUED, //success
-                    CARequestID = enrollmentResponse.Result.SerialNumber,
-                    Certificate = cert.Certificate,
+                    CARequestID = enrollmentResponse?.Result?.SerialNumber,
+                    Certificate = cert?.Certificate,
                     StatusMessage =
                         $"Order Successfully Created With Order Number {enrollmentResponse.Result.SerialNumber}"
                 };
