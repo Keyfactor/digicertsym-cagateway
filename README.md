@@ -1,14 +1,13 @@
+
 # DigiCert mPKI AnyGateway
 
 This gateway integration supports the Digicert MPKI platform. It handles Enrollment, Renewal, Revoke and inventory by multiple seat Ids.
 
 #### Integration status: Production - Ready for use in production environments.
 
-
 ## About the Keyfactor AnyGateway CA Connector
 
 This repository contains an AnyGateway CA Connector, which is a plugin to the Keyfactor AnyGateway. AnyGateway CA Connectors allow Keyfactor Command to be used for inventory, issuance, and revocation of certificates from a third-party certificate authority.
-
 
 ## Support for DigiCert mPKI AnyGateway
 
@@ -16,9 +15,10 @@ DigiCert mPKI AnyGateway is supported by Keyfactor for Keyfactor customers. If y
 
 ###### To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
 
-
 ---
 
+
+---
 
 
 
@@ -35,7 +35,7 @@ This gateway was compiled against version 22.1.1 of the AnyGateway Framework.  Y
 
 # Getting Started
 ## Standard Gateway Installation
-To begin, you must have the CA Gateway Service 21.3.2 installed and operational before attempting to configure the DigiCertSym mPKI plugin. This integration was tested with Keyfactor 9.1.0.0.
+To begin, you must have the CA Gateway Service installed and operational before attempting to configure the DigiCertSym mPKI plugin. This integration was tested with Keyfactor 9.1.0.0.
 To install the gateway follow these instructions.
 
 1) **Gateway Server** - Get the latest gateway .msi installer from Keyfactor and run the installation on the gateway server.
