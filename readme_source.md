@@ -1,6 +1,6 @@
 # Getting Started
 ## Standard Gateway Installation
-To begin, you must have the CA Gateway Service 21.3.2 installed and operational before attempting to configure the DigiCertSym mPKI plugin. This integration was tested with Keyfactor 9.1.0.0.
+To begin, you must have the CA Gateway Service installed and operational before attempting to configure the DigiCertSym mPKI plugin. This integration was tested with Keyfactor 9.1.0.0.
 To install the gateway follow these instructions.
 
 1) **Gateway Server** - Get the latest gateway .msi installer from Keyfactor and run the installation on the gateway server.
