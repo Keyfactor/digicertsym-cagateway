@@ -24,11 +24,14 @@ DigiCert mPKI AnyGateway is supported by Keyfactor for Keyfactor customers. If y
 
 
 
+
 ## Keyfactor AnyGateway Framework Supported
 
 This gateway was compiled against version 22.1.1 of the AnyGateway Framework.  You will need at least this version of the AnyGateway Framework Installed.  If you have a later AnyGateway Framework Installed you will probably need to add binding redirects in the CAProxyServer.exe.config file to make things work properly.
 
+
 [Keyfactor CAGateway Install Guide](https://software.keyfactor.com/Guides/AnyGateway_Generic/Content/AnyGateway/Introduction.htm)
+
 
 
 
